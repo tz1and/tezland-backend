@@ -7,6 +7,7 @@ class ServerConfig {
     public LOCAL_IPFS_URL: string;
     public SERVER_PORT: number;
     public CORS_ALLOW_ORIGIN: string;
+    public CLUSTER_WORKERS: number;
 
     constructor() {
         if(process.env.NFTSTORAGE_API_KEY)
@@ -28,6 +29,10 @@ class ServerConfig {
         if(process.env.CORS_ALLOW_ORIGIN)
             this.CORS_ALLOW_ORIGIN = process.env.CORS_ALLOW_ORIGIN;
         else this.CORS_ALLOW_ORIGIN = "";
+
+        if(process.env.CLUSTER_WORKERS !== undefined)
+            this.CLUSTER_WORKERS = parseInt(process.env.CLUSTER_WORKERS);
+        else this.CLUSTER_WORKERS = 4;
     }
 }
 

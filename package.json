@@ -5,9 +5,9 @@
   "main": "server.js",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
-    "start": "node ./build/server.js",
-    "dev": "NODE_ENV=development ts-node-dev ./src/server.ts"
+    "build": "tsc; cp .env.local build/.env",
+    "start": "cd build; node ./server.js",
+    "dev": "NODE_ENV=development ts-node-dev ./src/express_worker.ts"
   },
   "dependencies": {
     "body-parser": "^1.19.1",

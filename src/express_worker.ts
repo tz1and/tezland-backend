@@ -4,6 +4,11 @@ import cors from 'cors'
 import { uploadRequest } from './storage/storage'
 import { defaultRoute } from './home'
 import ServerConfig from './ServerConfig'
+import cluster from 'cluster'
+import assert from 'assert'
+
+if(process.env.NODE_ENV !== "development")
+    assert(!cluster.isPrimary);
 
 const server = express();
 
@@ -28,6 +33,6 @@ server.use("/", router);
 
 // start the Express server
 server.listen( ServerConfig.SERVER_PORT, () => {
-    console.log( `server started at http://localhost:${ ServerConfig.SERVER_PORT }` );
+    console.log( `express worker ${process.pid} started at http://localhost:${ ServerConfig.SERVER_PORT }` );
 } );
 

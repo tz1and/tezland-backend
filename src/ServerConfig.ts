@@ -1,5 +1,5 @@
 import { config as dotenvFlowConfig } from 'dotenv-flow'
-dotenvFlowConfig();
+dotenvFlowConfig({ silent: process.env.NODE_ENV !== "development" });
 
 class ServerConfig {
     public NFTSTORAGE_API_KEY: string;

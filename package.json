@@ -5,7 +5,7 @@
   "main": "server.js",
   "license": "MIT",
   "scripts": {
-    "build": "tsc; cp .env.local build/.env",
+    "build": "tsc; cp .env.production build/.env",
     "start": "cd build; node ./server.js",
     "dev": "NODE_ENV=development ts-node-dev ./src/express_worker.ts"
   },

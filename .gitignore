@@ -2,6 +2,7 @@ build/
 node_modules/
 yarn-error.log
 
-# local env files
+# local and prod env files
 .env.local
 .env.development.local
+.env.production

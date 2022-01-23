@@ -2,12 +2,12 @@
   "name": "tezland-backend",
   "version": "1.0.0",
   "description": "Backend for client side app, handing ipfs uploads, multiplayer, etc",
-  "main": "app.js",
+  "main": "server.js",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "start": "node ./build/app.js",
-    "dev": "NODE_ENV=development ts-node-dev ./src/app.ts"
+    "start": "node ./build/server.js",
+    "dev": "NODE_ENV=development ts-node-dev ./src/server.ts"
   },
   "dependencies": {
     "body-parser": "^1.19.1",

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Blob, NFTStorage, Service, Token } from 'nft.storage'
 import { performance } from 'perf_hooks';
-import AppConfig from '../AppConfig';
+import ServerConfig from '../ServerConfig';
 import { uploadToLocal } from './localipfs';
 
 const validateTZip21 = ({ name, description, decimals }: { name: string, description: string, decimals: number}) => {
@@ -46,8 +46,8 @@ class NFTStorageTZip extends NFTStorage {
     }
 }
 
-const client = new NFTStorageTZip({ token: AppConfig.NFTSTORAGE_API_KEY })
-const useLocalIpfs: boolean = AppConfig.USE_LOCAL_IPFS;
+const client = new NFTStorageTZip({ token: ServerConfig.NFTSTORAGE_API_KEY })
+const useLocalIpfs: boolean = ServerConfig.USE_LOCAL_IPFS;
 
 type handlerFunction = (data: any) => Promise<any>;
 

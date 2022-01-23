@@ -1,7 +1,7 @@
 import { config as dotenvFlowConfig } from 'dotenv-flow'
 dotenvFlowConfig();
 
-class AppConfig {
+class ServerConfig {
     public NFTSTORAGE_API_KEY: string;
     public USE_LOCAL_IPFS: boolean;
     public LOCAL_IPFS_URL: string;
@@ -31,4 +31,4 @@ class AppConfig {
     }
 }
 
-export default new AppConfig()
+export default new ServerConfig()

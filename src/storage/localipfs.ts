@@ -1,9 +1,9 @@
 import * as ipfs from 'ipfs-http-client';
 import { Blob } from 'nft.storage';
 import { performance } from 'perf_hooks';
-import AppConfig from '../AppConfig';
+import ServerConfig from '../ServerConfig';
 
-const ipfs_client = ipfs.create({ url: AppConfig.LOCAL_IPFS_URL });
+const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL });
 
 export const uploadToLocal = async (data: any): Promise<any> => {
     const start_time = performance.now()

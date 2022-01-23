@@ -3,9 +3,9 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import { uploadRequest } from './storage/storage'
 import { defaultRoute } from './home'
-import AppConfig from './AppConfig'
+import ServerConfig from './ServerConfig'
 
-const app = express();
+const server = express();
 
 // Set up router
 const router = express.Router();
@@ -13,7 +13,7 @@ const router = express.Router();
 // set up CORS
 // TODO: proper domain for prod 
 router.use(cors({
-    origin: AppConfig.CORS_ALLOW_ORIGIN
+    origin: ServerConfig.CORS_ALLOW_ORIGIN
 }));
 
 // use body-parser
@@ -24,10 +24,10 @@ router.use(bodyParser.json({limit: '200mb'}));
 router.post( "/upload", uploadRequest );
 //router.get( "/", defaultRoute );
 
-app.use("/", router);
+server.use("/", router);
 
 // start the Express server
-app.listen( AppConfig.SERVER_PORT, () => {
-    console.log( `server started at http://localhost:${ AppConfig.SERVER_PORT }` );
+server.listen( ServerConfig.SERVER_PORT, () => {
+    console.log( `server started at http://localhost:${ ServerConfig.SERVER_PORT }` );
 } );
 

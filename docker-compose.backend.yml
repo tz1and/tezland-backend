@@ -1,0 +1,18 @@
+version: "3.7"
+
+services:
+
+  tezland-backend:
+    container_name: tezland-backend
+    image: tezland-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - tezland-app
+
+networks:
+  default:
+    external: true
+    name: tz1and_prod

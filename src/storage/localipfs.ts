@@ -1,10 +1,12 @@
 import * as ipfs from 'ipfs-http-client';
 import { Blob } from 'nft.storage';
+import { performance } from 'perf_hooks';
 import AppConfig from '../AppConfig';
 
-export const uploadToLocal = async (data: any): Promise<any> => {
-    const ipfs_client = ipfs.create({ url: AppConfig.LOCAL_IPFS_URL });
+const ipfs_client = ipfs.create({ url: AppConfig.LOCAL_IPFS_URL });
 
+export const uploadToLocal = async (data: any): Promise<any> => {
+    const start_time = performance.now()
     // first we upload every blob in the object
     for (var property in data) {
         if(data[property] instanceof Blob) {
@@ -23,5 +25,7 @@ export const uploadToLocal = async (data: any): Promise<any> => {
     const metadata = JSON.stringify(data);
 
     const result = await ipfs_client.add(metadata);
+    console.log("uploadToLocal took " + (performance.now() - start_time).toFixed(2) + "ms");
+
     return `ipfs://${result.cid.toV1().toString()}`;
 }

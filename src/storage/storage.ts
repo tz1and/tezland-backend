@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { Blob, NFTStorage, Service, Token } from 'nft.storage'
+import { performance } from 'perf_hooks';
 import AppConfig from '../AppConfig';
 import { uploadToLocal } from './localipfs';
 
@@ -97,13 +98,16 @@ const prepareData = (data: any): Promise<any> => {
 }
 
 const uploadToNFTStorage: handlerFunction = async (data: any): Promise<string> => {
+    const start_time = performance.now();
     const metadata = await client.store(data);
+    console.log("uploadToNFTStorage took " + (performance.now() - start_time).toFixed(2) + "ms");
 
     return metadata.url;
 }
 
-export const uploadToStorage = async (req: Request, res: Response) => {
+export const uploadRequest = async (req: Request, res: Response) => {
     console.log("handling upload to ipfs request from " + req.ip);
+    const start_time = performance.now();
 
     try {
         const data = prepareData(req.body);
@@ -115,4 +119,6 @@ export const uploadToStorage = async (req: Request, res: Response) => {
         console.error("ipfs upload failed: " + e.message);
         res.status(500).json({ error: e.message });
     }
+
+    console.log("uploadRequest took " + (performance.now() - start_time).toFixed(2) + "ms");
 }

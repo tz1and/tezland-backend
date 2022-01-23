@@ -1,7 +1,7 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
-import { uploadToStorage } from './storage/storage'
+import { uploadRequest } from './storage/storage'
 import { defaultRoute } from './home'
 import AppConfig from './AppConfig'
 
@@ -21,7 +21,7 @@ router.use(cors({
 router.use(bodyParser.json({limit: '200mb'}));
 
 // the upload to nft.storage upload entry point
-router.post( "/upload", uploadToStorage );
+router.post( "/upload", uploadRequest );
 //router.get( "/", defaultRoute );
 
 app.use("/", router);

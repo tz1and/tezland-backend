@@ -36,4 +36,13 @@ class ServerConfig {
     }
 }
 
-export default new ServerConfig()
+const config = new ServerConfig();
+
+console.log("NFTSTORAGE_API_KEY: " + (config.NFTSTORAGE_API_KEY !== "" ? "set" : "not set"))
+console.log("USE_LOCAL_IPFS: " + config.USE_LOCAL_IPFS)
+console.log("LOCAL_IPFS_URL: " + config.LOCAL_IPFS_URL)
+console.log("SERVER_PORT: " + config.SERVER_PORT)
+console.log("CORS_ALLOW_ORIGIN: " + config.CORS_ALLOW_ORIGIN)
+console.log("CLUSTER_WORKERS: " + config.CLUSTER_WORKERS + "\n")
+
+export default config

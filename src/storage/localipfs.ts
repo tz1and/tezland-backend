@@ -6,7 +6,7 @@ import ServerConfig from '../ServerConfig';
 
 const ipfs_client = ServerConfig.USE_LOCAL_IPFS ? ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL }) : null;
 
-export const uploadToLocal = async (data: any): Promise<any> => {
+export const uploadToLocal = async (data: any): Promise<{ metdata_uri: string, cid: string }> => {
     if(!ipfs_client) {
         assert(false, "uploadToLocal called but ipfs client is null");
     }
@@ -32,5 +32,8 @@ export const uploadToLocal = async (data: any): Promise<any> => {
     const result = await ipfs_client.add(metadata);
     console.log("uploadToLocal took " + (performance.now() - start_time).toFixed(2) + "ms");
 
-    return `ipfs://${result.cid.toV0().toString()}`;
+    return {
+        metdata_uri: `ipfs://${result.cid.toV0().toString()}`,
+        cid: result.cid.toV0().toString(),
+    }
 }

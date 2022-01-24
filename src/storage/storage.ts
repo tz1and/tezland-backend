@@ -49,8 +49,6 @@ class NFTStorageTZip extends NFTStorage {
 const client = new NFTStorageTZip({ token: ServerConfig.NFTSTORAGE_API_KEY })
 const useLocalIpfs: boolean = ServerConfig.USE_LOCAL_IPFS;
 
-type handlerFunction = (data: any) => Promise<any>;
-
 const dataURItoBlob = (dataURI: string): Blob => {
     // TODO: this is pretty inefficient. rewrite sometime, maybe.
     // convert base64 to raw binary data held in a string
@@ -97,12 +95,19 @@ const prepareData = (data: any): Promise<any> => {
     return data;
 }
 
-const uploadToNFTStorage: handlerFunction = async (data: any): Promise<string> => {
+type ResultType = {
+    metdata_uri: string,
+    cid: string,
+ }
+
+ type handlerFunction = (data: any) => Promise<ResultType>;
+
+const uploadToNFTStorage: handlerFunction = async (data: any): Promise<ResultType> => {
     const start_time = performance.now();
     const metadata = await client.store(data);
     console.log("uploadToNFTStorage took " + (performance.now() - start_time).toFixed(2) + "ms");
 
-    return metadata.url;
+    return { metdata_uri: metadata.url, cid: metadata.ipnft };
 }
 
 export const uploadRequest = async (req: Request, res: Response) => {
@@ -113,7 +118,7 @@ export const uploadRequest = async (req: Request, res: Response) => {
         const data = prepareData(req.body);
 
         const func: handlerFunction = useLocalIpfs ? uploadToLocal : uploadToNFTStorage;
-        res.status(200).json({ metdata_uri: await func(data) });
+        res.status(200).json((await func(data)) as ResultType);
     }
     catch(e: any) {
         console.error("ipfs upload failed: " + e.message);

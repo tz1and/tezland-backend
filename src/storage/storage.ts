@@ -4,7 +4,7 @@ import { performance } from 'perf_hooks';
 import ServerConfig from '../ServerConfig';
 import { uploadToLocal } from './localipfs';
 
-const validateTZip21 = ({ name, description, decimals }: { name: string, description: string, decimals: number}) => {
+const validateTZip12 = ({ name, description, decimals }: { name: string, description: string, decimals: number}) => {
     // Just validate that expected fields are present
     if (typeof name !== 'string') {
       throw new TypeError(
@@ -24,7 +24,7 @@ const validateTZip21 = ({ name, description, decimals }: { name: string, descrip
 // extend NFTStorage to allow us to skip erc1155 check
 class NFTStorageTZip extends NFTStorage {
     static override async encodeNFT(input: any) {
-        validateTZip21(input)
+        validateTZip12(input)
 
         return Token.Token.encode(input)
     }

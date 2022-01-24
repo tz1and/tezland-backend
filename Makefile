@@ -2,10 +2,10 @@ docker-build:
 	docker-compose -f docker-compose.backend.yml build
 
 docker-up:
-	docker-compose up -d
+	docker-compose -f docker-compose.backend.yml up -d
 
 docker-down:
-	docker-compose down
+	docker-compose -f docker-compose.backend.yml down
 
 docker-push:
 	docker save -o tezland-backend-latest.tar tezland-backend:latest

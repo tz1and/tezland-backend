@@ -19,7 +19,7 @@ export const uploadToLocal = async (data: any): Promise<any> => {
 
             // upload to ips
             const result = await ipfs_client.add(blob);
-            const path = `ipfs://${result.cid.toV1().toString()}`;
+            const path = `ipfs://${result.cid.toV0().toString()}`;
 
             // and set the object to be the path
             data[property] = path;
@@ -32,5 +32,5 @@ export const uploadToLocal = async (data: any): Promise<any> => {
     const result = await ipfs_client.add(metadata);
     console.log("uploadToLocal took " + (performance.now() - start_time).toFixed(2) + "ms");
 
-    return `ipfs://${result.cid.toV1().toString()}`;
+    return `ipfs://${result.cid.toV0().toString()}`;
 }

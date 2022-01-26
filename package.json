@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Backend for client side app, handing ipfs uploads, multiplayer, etc",
   "main": "server.js",
-  "license": "MIT",
+  "private": true,
+  "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
     "start": "cd build; node ./server.js",

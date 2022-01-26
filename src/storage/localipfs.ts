@@ -4,7 +4,7 @@ import { Blob } from 'nft.storage';
 import { performance } from 'perf_hooks';
 import ServerConfig from '../ServerConfig';
 
-const ipfs_client = ServerConfig.USE_LOCAL_IPFS ? ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL }) : null;
+export const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL });
 
 export const uploadToLocal = async (data: any): Promise<{ metdata_uri: string, cid: string }> => {
     if(!ipfs_client) {
@@ -32,8 +32,7 @@ export const uploadToLocal = async (data: any): Promise<{ metdata_uri: string, c
     const result = await ipfs_client.add(metadata);
     console.log("uploadToLocal took " + (performance.now() - start_time).toFixed(2) + "ms");
 
-    return {
-        metdata_uri: `ipfs://${result.cid.toV0().toString()}`,
-        cid: result.cid.toV0().toString(),
-    }
+    const CIDstr = result.cid.toV0().toString();
+
+    return { metdata_uri: `ipfs://${CIDstr}`, cid: CIDstr };
 }

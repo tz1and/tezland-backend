@@ -6,6 +6,23 @@ import ServerConfig from '../ServerConfig';
 
 export const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL });
 
+// if it's a directory path, get the root file
+// and use that to mint.
+export async function get_root_file_from_dir(cid: string): Promise<string> {
+    console.log("get_root_file_from_dir: ", cid)
+    try {
+        for await(const entry of ipfs_client.ls(cid)) {
+            //console.log(entry)
+            if(entry.type === 'file') {
+                return entry.cid.toString();
+            }
+        }
+        throw new Error("Failed to get root file from dir");
+    } catch(e: any) {
+        throw new Error("Failed to get root file from dir: " + e.message);
+    }
+}
+
 export const uploadToLocal = async (data: any): Promise<{ metdata_uri: string, cid: string }> => {
     if(!ipfs_client) {
         assert(false, "uploadToLocal called but ipfs client is null");

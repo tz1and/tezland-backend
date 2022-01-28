@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { Blob, NFTStorage, Service, Token } from 'nft.storage'
 import { performance } from 'perf_hooks';
 import ServerConfig from '../ServerConfig';
-import { uploadToLocal, ipfs_client } from './localipfs';
+import { uploadToLocal, get_root_file_from_dir } from './localipfs';
 
 const validateTZip12 = ({ name, description, decimals }: { name: string, description: string, decimals: number}) => {
     // Just validate that expected fields are present
@@ -21,7 +21,8 @@ const validateTZip12 = ({ name, description, decimals }: { name: string, descrip
     }
 }
 
-// extend NFTStorage to allow us to skip erc1155 check
+// extend NFTStorage to allow us to supply our own validation while keeping
+// the simplicity of the store() function.
 class NFTStorageTZip extends NFTStorage {
     static override async encodeNFT(input: any) {
         validateTZip12(input)
@@ -47,7 +48,7 @@ class NFTStorageTZip extends NFTStorage {
 }
 
 const client = new NFTStorageTZip({ token: ServerConfig.NFTSTORAGE_API_KEY })
-const useLocalIpfs: boolean = ServerConfig.USE_LOCAL_IPFS;
+const uploadToLocalIpfs: boolean = ServerConfig.UPLOAD_TO_LOCAL_IPFS;
 
 const dataURItoBlob = (dataURI: string): Blob => {
     // TODO: this is pretty inefficient. rewrite sometime, maybe.
@@ -73,26 +74,9 @@ const dataURItoBlob = (dataURI: string): Blob => {
     return blob;
 }
 
-// if it's a directory path, get the root file
-// and use that to mint.
-async function get_root_file_from_dir(cid: string): Promise<string> {
-    console.log("get_root_file_from_dir: ", cid)
-    try {
-        for await(const entry of ipfs_client.ls(cid)) {
-            //console.log(entry)
-            if(entry.type === 'file') {
-                return entry.cid.toString();
-            }
-        }
-        throw new Error("Failed to get root file from dir");
-    } catch(e: any) {
-        throw new Error("Failed to get root file from dir: " + e.message);
-    }
-}
-
 function isPlainObject(input: any){
     return input && !Array.isArray(input) && typeof input === 'object';
- }
+}
 
 const prepareData = (data: any): Promise<any> => {
     // iterate over object props
@@ -135,7 +119,7 @@ export const uploadRequest = async (req: Request, res: Response) => {
     try {
         const data = prepareData(req.body);
 
-        const func: handlerFunction = useLocalIpfs ? uploadToLocal : uploadToNFTStorage;
+        const func: handlerFunction = uploadToLocalIpfs ? uploadToLocal : uploadToNFTStorage;
         const response = await func(data);
         //console.log(response)
         res.status(200).json(response);

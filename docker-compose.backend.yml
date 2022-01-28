@@ -11,7 +11,7 @@ services:
     restart: always
     depends_on:
       - backend-ipfs
-      - tezland-app
+      #- tezland-app # build fails with the dep
 
   #
   # We'll need an ipfs api entrypoint in prod.

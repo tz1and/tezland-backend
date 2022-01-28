@@ -1,8 +1,16 @@
-node_modules
-build
+# ignore various standard-ish
 .dockerignore
 Dockerfile
 Dockerfile.prod
+docker-compose.*
+nginx.conf
+Makefile
+.git/
+
+# ignore project specific
+node_modules/
+build/
+
+# env files
 .env*
 !.env.production.local
-.git/

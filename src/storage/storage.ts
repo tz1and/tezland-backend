@@ -2,7 +2,6 @@ import { Blob, NFTStorage, Service, Token } from 'nft.storage'
 import * as ipfs from 'ipfs-http-client';
 import { performance } from 'perf_hooks';
 import ServerConfig from '../ServerConfig';
-import assert from 'assert';
 
 
 const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL });

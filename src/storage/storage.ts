@@ -1,8 +1,11 @@
-import { Request, Response } from 'express'
 import { Blob, NFTStorage, Service, Token } from 'nft.storage'
+import * as ipfs from 'ipfs-http-client';
 import { performance } from 'perf_hooks';
 import ServerConfig from '../ServerConfig';
-import { uploadToLocal, get_root_file_from_dir } from './localipfs';
+import assert from 'assert';
+
+
+const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL });
 
 const validateTZip12 = ({ name, description, decimals }: { name: string, description: string, decimals: number}) => {
     // Just validate that expected fields are present
@@ -78,7 +81,7 @@ function isPlainObject(input: any){
     return input && !Array.isArray(input) && typeof input === 'object';
 }
 
-const prepareData = (data: any): Promise<any> => {
+const prepareData = (data: any): any => {
     // iterate over object props
     for (var property in data) {
         // if it's type object and has a "blob" prop,
@@ -98,6 +101,27 @@ const prepareData = (data: any): Promise<any> => {
     return data;
 }
 
+// if it's a directory path, get the root file
+// and use that to mint.
+async function get_root_file_from_dir(cid: string): Promise<string> {
+    console.log("get_root_file_from_dir: ", cid)
+    try {
+        for await(const entry of ipfs_client.ls(cid)) {
+            //console.log(entry)
+            if(entry.type === 'file') {
+                return entry.cid.toString();
+            }
+        }
+        throw new Error("Failed to get root file from dir");
+    } catch(e: any) {
+        throw new Error("Failed to get root file from dir: " + e.message);
+    }
+}
+
+//
+// Upload handlers
+//
+
 type ResultType = {
     metdata_uri: string,
     cid: string,
@@ -114,22 +138,36 @@ const uploadToNFTStorage: handlerFunction = async (data: any): Promise<ResultTyp
     return { metdata_uri: `ipfs://${file_cid}`, cid: file_cid };
 }
 
-export const uploadRequest = async (req: Request, res: Response) => {
-    console.log("handling upload to ipfs request from " + req.ip);
-    const start_time = performance.now();
+const uploadToLocal = async (data: any): Promise<ResultType> => {
+    const start_time = performance.now()
+    // first we upload every blob in the object
+    for (var property in data) {
+        if(data[property] instanceof Blob) {
+            const blob: Blob = data[property];
 
-    try {
-        const data = prepareData(req.body);
+            // upload to ips
+            const result = await ipfs_client.add(blob);
+            const path = `ipfs://${result.cid.toV0().toString()}`;
 
-        const func: handlerFunction = uploadToLocalIpfs ? uploadToLocal : uploadToNFTStorage;
-        const response = await func(data);
-        //console.log(response)
-        res.status(200).json(response);
+            // and set the object to be the path
+            data[property] = path;
+        }
     }
-    catch(e: any) {
-        console.error("ipfs upload failed: " + e.message);
-        res.status(500).json({ error: e.message });
-    }
 
-    console.log("uploadRequest took " + (performance.now() - start_time).toFixed(2) + "ms");
+    // now upload the metadata:
+    const metadata = JSON.stringify(data);
+
+    const result = await ipfs_client.add(metadata);
+    console.log("uploadToLocal took " + (performance.now() - start_time).toFixed(2) + "ms");
+
+    const CIDstr = result.cid.toV0().toString();
+
+    return { metdata_uri: `ipfs://${CIDstr}`, cid: CIDstr };
+}
+
+export const uploadToIpfs = (req_body: any): Promise<ResultType> => {
+    const data = prepareData(req_body);
+
+    const handler: handlerFunction = uploadToLocalIpfs ? uploadToLocal : uploadToNFTStorage;
+    return handler(data);
 }

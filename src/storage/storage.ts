@@ -93,6 +93,8 @@ const prepareData = (data: any): Promise<any> => {
         }
     }
 
+    // TODO: make sure fileSize in formats matched the artifactUri blob
+
     return data;
 }
 

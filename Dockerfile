@@ -26,4 +26,5 @@ COPY ./.env.production.local ./.env
 RUN yarn global add pm2
 
 EXPOSE 9051
+EXPOSE 9052
 CMD ["pm2-runtime","server.js"]

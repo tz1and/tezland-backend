@@ -6,7 +6,7 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc; cp .env build/.env",
     "start": "cd build; node ./server.js",
     "dev": "NODE_ENV=development ts-node-dev ./src/dev_server.ts"
   },

@@ -17,9 +17,7 @@ function startExpressWorker(): void {
         silent: false
     });
 
-    console.log("forking worker")
     let worker = cluster.fork(); // express worker
-    console.log(worker)
     expressWorkers.add(worker.id);
 }
 

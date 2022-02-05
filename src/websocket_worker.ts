@@ -12,15 +12,41 @@ const ws = new WebSocket.Server({ port: WebsocketConfig.WEBSOCKET_SERVER_PORT, p
 
 class User {
     readonly conn: WebSocket;
+
     public name: string = "";
-    public connected: boolean;
+
+    private _connected: boolean;
+    public get connected() { return this._connected; }
+
     //public pos: Float32Array = Float32Array.of(0,0,0);
     //public rot: Float32Array = Float32Array.of(0,0,0);
     public transformData: string = '0'.repeat(48);
 
     constructor(conn: WebSocket) {
         this.conn = conn;
-        this.connected = false;
+        this._connected = false;
+    }
+
+    public generateChallenge() {
+        return "ohyoujustcomein";
+    }
+
+    public authenticate(response: string) {
+        // TODO: validate signature if not guest.
+        if(response !== "OK") throw new Error("Auth: challenge failed");
+
+        this._connected = true;
+        clients.add(this);
+    }
+
+    public disconnect() {
+        if(this._connected) {
+            clients.delete(this);
+            disconnects.add(this.name);
+        }
+
+        this._connected = false;
+        assert(!clients.has(this));
     }
 }
 
@@ -30,19 +56,14 @@ const disconnects: Set<string> = new Set();
 async function handleRequest(req: any, user: User): Promise<any> {
     if (req.msg === "hello") {
         user.name = req.user;
-        return { msg: "challenge", challenge: "ohyoujustcomein"/*user.generateChallenge() TODO */ };
+        return { msg: "challenge", challenge: user.generateChallenge() };
     } else if (req.msg === "challenge-response") {
-        // TODO
-        /*user.authenticate(web3, req.response);
-        if(user.authenticated)*/
-        user.connected = true;
-        clients.add(user);
+        user.authenticate(req.response);
         return { msg: "authenticated" };
-        //else return { msg: "auth-failed" };
     } else {
-        // For all other requests, user has to be authenticated
-        //if (!user.authenticated) return { msg: "auth-error" };
-        if (!user.connected) throw Error("handshake failed");
+        // For all other requests, user has to be "authenticated"
+        // as guest or account with wallet.
+        if (!user.connected) throw Error("User needs to authenticate");
 
         if (req.msg === "upd") {
             assert(req.upd.length === 48);
@@ -50,12 +71,10 @@ async function handleRequest(req: any, user: User): Promise<any> {
             // update pos doesn't respond.
             return;
         }
-        /*else if (req.msg = "req-balances") {
-            return { msg: "res-balances", tokens: [] };
-        }*/
     }
 
-    return { msg: "error" };
+    // fallthrough, send error and disconnect.
+    throw Error("Unknown request type");
 }
 
 ws.on('connection', function connection(conn) {
@@ -72,15 +91,14 @@ ws.on('connection', function connection(conn) {
             const res = await handleRequest(req, user);
             if (res) conn.send(JSON.stringify(res));
         } catch(e) {
-            const res = { msg: "error", desc: `Failed to handle request, closing: ${e}` };
+            const res = { msg: "error", desc: `While handling request: ${e}. Closing.` };
             conn.send(JSON.stringify(res));
             conn.close();
         }
     });
 
     conn.on('close', function incoming(code, reason) {
-        clients.delete(user);
-        disconnects.add(user.name);
+        user.disconnect();
         console.log('Connection closed: %s, %s', code, reason);
     });
 });

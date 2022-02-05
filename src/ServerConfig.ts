@@ -1,6 +1,3 @@
-import { config as dotenvFlowConfig } from 'dotenv-flow'
-dotenvFlowConfig({ silent: process.env.NODE_ENV !== "development" });
-
 class ServerConfig {
     public NFTSTORAGE_API_KEY: string;
     public UPLOAD_TO_LOCAL_IPFS: boolean;

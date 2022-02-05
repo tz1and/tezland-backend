@@ -6,9 +6,9 @@ import { defaultRoute, uploadRequest } from './requests'
 import ServerConfig from './ServerConfig'
 import cluster from 'cluster'
 import assert from 'assert'
+import { isDev } from './utils/Utils'
 
-if(process.env.NODE_ENV !== "development")
-    assert(!cluster.isPrimary);
+if(!isDev()) assert(!cluster.isPrimary);
 
 const server = express();
 

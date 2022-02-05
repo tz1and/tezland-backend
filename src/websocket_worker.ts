@@ -13,16 +13,19 @@ const ws = new WebSocket.Server({ port: WebsocketConfig.WEBSOCKET_SERVER_PORT, p
 class User {
     readonly conn: WebSocket;
     public name: string = "";
+    public connected: boolean;
     //public pos: Float32Array = Float32Array.of(0,0,0);
     //public rot: Float32Array = Float32Array.of(0,0,0);
     public transformData: string = '0'.repeat(48);
 
     constructor(conn: WebSocket) {
         this.conn = conn;
+        this.connected = false;
     }
 }
 
 const clients: Set<User> = new Set();
+const disconnects: Set<string> = new Set();
 
 async function handleRequest(req: any, user: User): Promise<any> {
     if (req.msg === "hello") {
@@ -32,23 +35,20 @@ async function handleRequest(req: any, user: User): Promise<any> {
         // TODO
         /*user.authenticate(web3, req.response);
         if(user.authenticated)*/
+        user.connected = true;
+        clients.add(user);
         return { msg: "authenticated" };
         //else return { msg: "auth-failed" };
     } else {
         // For all other requests, user has to be authenticated
         //if (!user.authenticated) return { msg: "auth-error" };
-        // TODO
-        //if (!user.authenticated) throw Error("Client not authenticated");
+        if (!user.connected) throw Error("handshake failed");
 
         if (req.msg === "upd") {
             assert(req.upd.length === 48);
             user.transformData = req.upd;
-            //const pos: Float32Array = req.pos as Float32Array;
-            //const rot: Float32Array = req.rot as Float32Array;
-            //assert(pos.length === 3 && rot.length === 3);
-            //
-            //user.pos = pos;
-            //user.rot = rot;
+            // update pos doesn't respond.
+            return;
         }
         /*else if (req.msg = "req-balances") {
             return { msg: "res-balances", tokens: [] };
@@ -62,7 +62,6 @@ ws.on('connection', function connection(conn) {
     console.log(`New connection on websocket worker ${process.pid}`);
 
     const user = new User(conn);
-    clients.add(user);
 
     conn.on('message', async function incoming(message) {
         //console.log('received: %s', message);
@@ -71,7 +70,7 @@ ws.on('connection', function connection(conn) {
             const req = JSON.parse(message.toString());
 
             const res = await handleRequest(req, user);
-            conn.send(JSON.stringify(res));
+            if (res) conn.send(JSON.stringify(res));
         } catch(e) {
             const res = { msg: "error", desc: `Failed to handle request, closing: ${e}` };
             conn.send(JSON.stringify(res));
@@ -81,6 +80,7 @@ ws.on('connection', function connection(conn) {
 
     conn.on('close', function incoming(code, reason) {
         clients.delete(user);
+        disconnects.add(user.name);
         console.log('Connection closed: %s, %s', code, reason);
     });
 });
@@ -92,7 +92,21 @@ function sendAll() {
     // TODO: type this
     const positons: any = { msg: "position-updates", updates: [] }
 
+    disconnects.forEach((dc) => {
+        const upd: any = {};
+        upd.name = dc;
+        upd.dc = true;
+        //upd.pos = c.pos;
+        //upd.rot = c.rot;
+        positons.updates.push(upd);
+    })
+
+    disconnects.clear();
+
     clients.forEach((c) => {
+        // to be save, but shouldn't be needed.
+        if(!c.connected) return;
+
         // TODO: type this.
         const upd: any = {};
         upd.name = c.name;

@@ -4,10 +4,11 @@ import process from 'process';
 import assert from 'assert';
 import WebsocketConfig from './WebsocketConfig';
 import { isDev } from './utils/Utils';
+import { performance } from 'perf_hooks';
 
 if(!isDev()) assert(!cluster.isPrimary);
 
-const UpdateInterval = 500;
+const UpdateInterval = 100;
 const ws = new WebSocket.Server({ port: WebsocketConfig.WEBSOCKET_SERVER_PORT, perMessageDeflate: true/*, maxPayload: WorkerConfig.appserver_max_payload*/ });
 
 class User {
@@ -104,8 +105,10 @@ ws.on('connection', function connection(conn) {
 });
 
 
-function sendAll() {
+function serverTick() {
     if(clients.size === 0) return;
+
+    //const start_time = performance.now();
     
     // TODO: type this
     const positons: any = { msg: "position-updates", updates: [] }
@@ -122,7 +125,7 @@ function sendAll() {
     disconnects.clear();
 
     clients.forEach((c) => {
-        // to be save, but shouldn't be needed.
+        // to be safe, but shouldn't be needed.
         if(!c.connected) return;
 
         // TODO: type this.
@@ -139,8 +142,11 @@ function sendAll() {
     clients.forEach((c) => {
         c.conn.send(response);
     })
+
+    //const elapsed = performance.now() - start_time;
+    //console.log(`update sending update took: ${elapsed}ms`);
 }
 
-setInterval(sendAll, UpdateInterval);
+setInterval(serverTick, UpdateInterval);
 
 console.log(`WebSocket worker ${process.pid} started`);

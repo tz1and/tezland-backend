@@ -1,4 +1,4 @@
-import { Blob, NFTStorage, Service, Token } from 'nft.storage'
+import { File, NFTStorage, Service, Token } from 'nft.storage'
 import * as ipfs from 'ipfs-http-client';
 import { performance } from 'perf_hooks';
 import ServerConfig from '../ServerConfig';
@@ -52,27 +52,31 @@ class NFTStorageTZip extends NFTStorage {
 const client = new NFTStorageTZip({ token: ServerConfig.NFTSTORAGE_API_KEY })
 const uploadToLocalIpfs: boolean = ServerConfig.UPLOAD_TO_LOCAL_IPFS;
 
-const dataURItoBlob = (dataURI: string): Blob => {
+const fileLikeToFile = (blobLike: any): typeof File => {
+    // Make sure it's a blobLike
+    if(blobLike["dataUri"] === undefined)
+        throw new Error("dataUri missing on bloblike: " + blobLike);
+
+    if(blobLike["type"] === undefined)
+        throw new Error("type missing on bloblike: " + blobLike);
+
+    if(blobLike["name"] === undefined)
+        throw new Error("name missing on bloblike: " + blobLike);
+
+    const dataUri  = blobLike["dataUri"];
+    const mimeType = blobLike["type"];
+    const fileName = blobLike["name"];
+
     // TODO: this is pretty inefficient. rewrite sometime, maybe.
     // convert base64 to raw binary data held in a string
-    var byteString = atob(dataURI.split(',')[1]);
+    var buf = Buffer.from(dataUri.split(',')[1], 'base64')
   
     // separate out the mime component
-    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
-  
-    // write the bytes of the string to an ArrayBuffer
-    var ab = new ArrayBuffer(byteString.length);
-  
-    // create a view into the buffer
-    var ia = new Uint8Array(ab);
-  
-    // set the bytes of the buffer to the correct values
-    for (var i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-    }
+    // NOTE: we don't trust the mimeType in the dataUri
+    //var mimeString = dataUri.split(',')[0].split(':')[1].split(';')[0]
   
     // write the ArrayBuffer to a blob, and you're done
-    var blob = new Blob([ia], {type: mimeString});
+    var blob = new File([buf], fileName, {type: mimeType});
     return blob;
 }
 
@@ -86,12 +90,7 @@ const prepareData = (data: any): any => {
         // if it's type object and has a "blob" prop,
         // convert it to a blob.
         if(isPlainObject(data[property])) {
-            // does the dataUri property exist?
-            if(data[property]["dataUri"] !== undefined) {
-                const dataUri = data[property]["dataUri"];
-                data[property] = dataURItoBlob(dataUri);
-            }
-            else throw new Error("dataUri missing on bloblike: " + property);
+            data[property] = fileLikeToFile(data[property]);
         }
     }
 
@@ -141,11 +140,11 @@ const uploadToLocal = async (data: any): Promise<ResultType> => {
     const start_time = performance.now()
     // first we upload every blob in the object
     for (var property in data) {
-        if(data[property] instanceof Blob) {
-            const blob: Blob = data[property];
+        if(data[property] instanceof File) {
+            const file: typeof File = data[property];
 
             // upload to ips
-            const result = await ipfs_client.add(blob);
+            const result = await ipfs_client.add(file);
             const path = `ipfs://${result.cid.toV0().toString()}`;
 
             // and set the object to be the path

@@ -16,6 +16,6 @@ class WebsocketConfig {
 const config = new WebsocketConfig();
 
 console.log("WEBSOCKET_SERVER_PORT: " + config.WEBSOCKET_SERVER_PORT)
-console.log("CORS_ALLOW_ORIGIN: " + config.CORS_ALLOW_ORIGIN + "ņ")
+console.log("CORS_ALLOW_ORIGIN: " + config.CORS_ALLOW_ORIGIN + "\n")
 
 export default config

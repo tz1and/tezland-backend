@@ -1,10 +1,12 @@
 import { File, NFTStorage, Service, Token } from 'nft.storage'
 import * as ipfs from 'ipfs-http-client';
+import { TimeoutError } from 'ipfs-utils/src/http'
 import { performance } from 'perf_hooks';
 import ServerConfig from '../ServerConfig';
+import { sleep } from '../utils/Utils';
 
 
-const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL });
+const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL, timeout: 10000 });
 
 const validateTZip12 = ({ name, description, decimals }: { name: string, description: string, decimals: number}) => {
     // Just validate that expected fields are present
@@ -104,13 +106,27 @@ const prepareData = (data: any): any => {
 async function get_root_file_from_dir(cid: string): Promise<string> {
     console.log("get_root_file_from_dir: ", cid)
     try {
-        for await(const entry of ipfs_client.ls(cid)) {
-            //console.log(entry)
-            if(entry.type === 'file') {
-                return entry.cid.toString();
+        const max_num_retries = 5;
+        let num_retries = 0;
+        while(num_retries < max_num_retries) {
+            try {
+                for await (const entry of ipfs_client.ls(cid)) {
+                    //console.log(entry)
+                    if (entry.type === 'file') {
+                        return entry.cid.toString();
+                    }
+                }
+                throw new Error("Failed to get root file from dir");
+            } catch (e) {
+                if (e instanceof TimeoutError) {
+                    num_retries++
+                    console.log("retrying ipfs.ls");
+                } else {
+                    throw e; // let others bubble up
+                }
             }
         }
-        throw new Error("Failed to get root file from dir");
+        throw new Error("Failed to get root file from dir. Retries = " + max_num_retries);
     } catch(e: any) {
         throw new Error("Failed to get root file from dir: " + e.message);
     }
@@ -129,7 +145,12 @@ type handlerFunction = (data: any) => Promise<ResultType>;
 
 const uploadToNFTStorage: handlerFunction = async (data: any): Promise<ResultType> => {
     const start_time = performance.now();
+    // Store the metadata + files object.
     const metadata = await client.store(data);
+    // Sleep for a brief moment before calling get_root_file_from_dir.
+    await sleep(250);
+    // Get the root file for the directory uploaded by store.
+    // it will be the direct CID for the metadata.json.
     const file_cid = await get_root_file_from_dir(metadata.ipnft);
     console.log("uploadToNFTStorage took " + (performance.now() - start_time).toFixed(2) + "ms");
 

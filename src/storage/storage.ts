@@ -1,6 +1,6 @@
 import { File, NFTStorage, Service, Token } from 'nft.storage'
 import * as ipfs from 'ipfs-http-client';
-import { TimeoutError } from 'ipfs-utils/src/http'
+import { TimeoutError } from 'ipfs-utils/src/http';
 import { performance } from 'perf_hooks';
 import ServerConfig from '../ServerConfig';
 import { sleep } from '../utils/Utils';
@@ -30,7 +30,6 @@ const validateTZip12 = ({ name, description, decimals }: { name: string, descrip
 class NFTStorageTZip extends NFTStorage {
     static override async encodeNFT(input: any) {
         validateTZip12(input)
-
         return Token.Token.encode(input)
     }
 
@@ -44,11 +43,20 @@ class NFTStorageTZip extends NFTStorage {
         return NFTStorageTZip.store(this, token)
     }
 
-    static override async storeBlob(service: Service, blob: Blob) {
-        const { cid, car } = await NFTStorageTZip.encodeBlob(blob)
-        await NFTStorage.storeCar(service, car)
-        return cid.toString()
-    }
+    /*static override async storeBlob(service: Service, blob: Blob) {
+        const blockstore = new Blockstore()
+        let cidString
+
+        try {
+            const { cid, car } = await NFTStorageTZip.encodeBlob(blob, { blockstore })
+            await NFTStorageTZip.storeCar(service, car)
+            cidString = cid.toString()
+        } finally {
+            await blockstore.close()
+        }
+
+        return cidString
+    }*/
 }
 
 const client = new NFTStorageTZip({ token: ServerConfig.NFTSTORAGE_API_KEY })

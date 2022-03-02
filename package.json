@@ -15,12 +15,9 @@
     "cors": "^2.8.5",
     "dotenv-flow": "^3.2.0",
     "express": "^4.17.2",
-    "ipfs-http-client": "^55.0.0",
-    "nft.storage": "^5.2.0",
+    "ipfs-http-client": "^56.0.0",
+    "nft.storage": "^6.0.0",
     "ws": "^8.4.2"
-  },
-  "resolutions": {
-    "@web-std/fetch": "3.0.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",

@@ -65,13 +65,13 @@ const uploadToLocalIpfs: boolean = ServerConfig.UPLOAD_TO_LOCAL_IPFS;
 const fileLikeToFile = (blobLike: any): typeof File => {
     // Make sure it's a blobLike
     if(blobLike["dataUri"] === undefined)
-        throw new Error("dataUri missing on bloblike: " + blobLike);
+        throw new Error("dataUri missing on fileLike: " + blobLike);
 
     if(blobLike["type"] === undefined)
-        throw new Error("type missing on bloblike: " + blobLike);
+        throw new Error("type missing on fileLike: " + blobLike);
 
     if(blobLike["name"] === undefined)
-        throw new Error("name missing on bloblike: " + blobLike);
+        throw new Error("name missing on fileLike: " + blobLike);
 
     const dataUri  = blobLike["dataUri"];
     const mimeType = blobLike["type"];
@@ -90,6 +90,42 @@ const fileLikeToFile = (blobLike: any): typeof File => {
     return blob;
 }
 
+function isFileLike(input: any) {
+    if(input["dataUri"] === undefined)
+        return false;
+
+    if(input["type"] === undefined)
+        return false;
+
+    if(input["name"] === undefined)
+        return false;
+
+    return true;
+}
+
+const refLikeToFile = (refLike: any, topLevel: any): typeof File => {
+    // Make sure it's a refLike
+    if(refLike["topLevelRef"] === undefined)
+        throw new Error("topLevelRef missing on refLike: " + refLike);
+
+    const topLevelRef = refLike["topLevelRef"];
+    
+    if(topLevel[topLevelRef] === undefined)
+        throw new Error("topLevel data '" + topLevelRef + "' is missing for refLike: " + refLike);
+
+    if(!(topLevel[topLevelRef] instanceof File))
+        throw new Error("topLevel data '" + topLevelRef + "' not a file for refLike: " + refLike);
+
+    return topLevel[topLevelRef];
+}
+
+function isRefLike(input: any) {
+    if(input["topLevelRef"] === undefined)
+        return false;
+
+    return true;
+}
+
 function isPlainObject(input: any){
     return input && !Array.isArray(input) && typeof input === 'object';
 }
@@ -99,12 +135,35 @@ const prepareData = (data: any): any => {
     for (var property in data) {
         // if it's type object and has a "blob" prop,
         // convert it to a blob.
-        if(isPlainObject(data[property])) {
+        if(isPlainObject(data[property]) && isFileLike(data[property])) {
             data[property] = fileLikeToFile(data[property]);
         }
     }
 
     // TODO: make sure fileSize in formats matched the artifactUri blob
+
+    return unreferenceData(data);
+}
+
+// Unreferences refLikes into top-level elements
+const unreferenceData = (data: any): any => {
+    const traverse = (jsonObj: any) => {
+        if( jsonObj !== null && typeof jsonObj == "object" ) {
+            // key is either an array index or object key
+            Object.entries(jsonObj).forEach(([key, value]) => {
+                // if it's a refLike, unreference it.
+                if(isPlainObject(value) && isRefLike(value)) {
+                    jsonObj[key] = refLikeToFile(value, data);
+                }
+                else traverse(value);
+            });
+        }
+        else {
+            // jsonObj is a number or string
+        }
+    }
+
+    traverse(data);
 
     return data;
 }
@@ -167,19 +226,31 @@ const uploadToNFTStorage: handlerFunction = async (data: any): Promise<ResultTyp
 
 const uploadToLocal = async (data: any): Promise<ResultType> => {
     const start_time = performance.now()
+
     // first we upload every blob in the object
-    for (var property in data) {
-        if(data[property] instanceof File) {
-            const file: typeof File = data[property];
-
-            // upload to ips
-            const result = await ipfs_client.add(file);
-            const path = `ipfs://${result.cid.toV0().toString()}`;
-
-            // and set the object to be the path
-            data[property] = path;
+    const traverse = async (jsonObj: any) => {
+        if( jsonObj !== null && typeof jsonObj == "object" ) {
+            // key is either an array index or object key
+            for (const [key, value] of Object.entries(jsonObj)) {
+                // if it's a File, upload it.
+                if(value instanceof File) {
+                    const file: typeof File = value;
+        
+                    // upload to ips
+                    const result = await ipfs_client.add(file);
+                    const path = `ipfs://${result.cid.toV0().toString()}`;
+        
+                    // and set the object to be the path
+                    jsonObj[key] = path;
+                }
+                else await traverse(value);
+            };
+        }
+        else {
+            // jsonObj is a number or string
         }
     }
+    await traverse(data);
 
     // now upload the metadata:
     const metadata = JSON.stringify(data);

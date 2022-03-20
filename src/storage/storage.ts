@@ -4,6 +4,7 @@ import { TimeoutError } from 'ipfs-utils/src/http';
 import { performance } from 'perf_hooks';
 import ServerConfig from '../ServerConfig';
 import { sleep } from '../utils/Utils';
+import cluster from 'cluster';
 
 
 const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL, timeout: 10000 });
@@ -59,7 +60,11 @@ class NFTStorageTZip extends NFTStorage {
     }*/
 }
 
-const client = new NFTStorageTZip({ token: ServerConfig.NFTSTORAGE_API_KEY })
+// TODO: this is kind of a nasty workaround, but it will probably work for now :)
+const cluster_worker_id = cluster.worker ? cluster.worker.id : 0;
+console.log("cluster_worker_id: ", cluster_worker_id);
+
+const client = new NFTStorageTZip({ token: ServerConfig.NFTSTORAGE_API_KEY[cluster_worker_id % ServerConfig.NFTSTORAGE_API_KEY.length] })
 const uploadToLocalIpfs: boolean = ServerConfig.UPLOAD_TO_LOCAL_IPFS;
 
 const fileLikeToFile = (blobLike: any): typeof File => {

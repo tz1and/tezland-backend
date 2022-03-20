@@ -1,5 +1,5 @@
 class ServerConfig {
-    public NFTSTORAGE_API_KEY: string;
+    public NFTSTORAGE_API_KEY: string[];
     public UPLOAD_TO_LOCAL_IPFS: boolean;
     public LOCAL_IPFS_URL: string;
     public SERVER_PORT: number;
@@ -8,8 +8,8 @@ class ServerConfig {
 
     constructor() {
         if(process.env.NFTSTORAGE_API_KEY)
-            this.NFTSTORAGE_API_KEY = process.env.NFTSTORAGE_API_KEY;
-        else this.NFTSTORAGE_API_KEY = "";
+            this.NFTSTORAGE_API_KEY = process.env.NFTSTORAGE_API_KEY.split(',');
+        else this.NFTSTORAGE_API_KEY = [];
 
         if(process.env.UPLOAD_TO_LOCAL_IPFS !== undefined)
             this.UPLOAD_TO_LOCAL_IPFS = process.env.UPLOAD_TO_LOCAL_IPFS !== "0" && process.env.UPLOAD_TO_LOCAL_IPFS !== "FALSE";
@@ -35,7 +35,7 @@ class ServerConfig {
 
 const config = new ServerConfig();
 
-console.log("NFTSTORAGE_API_KEY: " + (config.NFTSTORAGE_API_KEY !== "" ? "set" : "not set"))
+console.log("NFTSTORAGE_API_KEY: " + (config.NFTSTORAGE_API_KEY !== [] ? "set" : "not set"))
 console.log("UPLOAD_TO_LOCAL_IPFS: " + config.UPLOAD_TO_LOCAL_IPFS)
 console.log("LOCAL_IPFS_URL: " + config.LOCAL_IPFS_URL)
 console.log("SERVER_PORT: " + config.SERVER_PORT)

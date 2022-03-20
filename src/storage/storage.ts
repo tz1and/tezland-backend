@@ -6,8 +6,6 @@ import ServerConfig from '../ServerConfig';
 import { sleep } from '../utils/Utils';
 
 
-const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL, timeout: 10000 });
-
 const validateTZip12 = ({ name, description, decimals }: { name: string, description: string, decimals: number}) => {
     // Just validate that expected fields are present
     if (typeof name !== 'string') {
@@ -178,6 +176,8 @@ const unreferenceData = (data: any): any => {
 async function get_root_file_from_dir(cid: string): Promise<string> {
     console.log("get_root_file_from_dir: ", cid)
     try {
+        const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL, timeout: 10000 });
+
         const max_num_retries = 5;
         let num_retries = 0;
         while(num_retries < max_num_retries) {
@@ -234,6 +234,8 @@ const uploadToNFTStorage: handlerFunction = async (data: any): Promise<ResultTyp
 
 const uploadToLocal = async (data: any): Promise<ResultType> => {
     const start_time = performance.now()
+
+    const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL, timeout: 10000 });
 
     // first we upload every blob in the object
     const traverse = async (jsonObj: any) => {

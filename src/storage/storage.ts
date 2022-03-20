@@ -4,7 +4,6 @@ import { TimeoutError } from 'ipfs-utils/src/http';
 import { performance } from 'perf_hooks';
 import ServerConfig from '../ServerConfig';
 import { sleep } from '../utils/Utils';
-import cluster from 'cluster';
 
 
 const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL, timeout: 10000 });
@@ -61,10 +60,11 @@ class NFTStorageTZip extends NFTStorage {
 }
 
 // TODO: this is kind of a nasty workaround, but it will probably work for now :)
-const cluster_worker_id = cluster.worker ? cluster.worker.id : 0;
-console.log("cluster_worker_id: ", cluster_worker_id);
-
-const client = new NFTStorageTZip({ token: ServerConfig.NFTSTORAGE_API_KEY[cluster_worker_id % ServerConfig.NFTSTORAGE_API_KEY.length] })
+var request_counter: number = 0;
+const nft_storage_clients: NFTStorageTZip[] = [];
+for (const key of ServerConfig.NFTSTORAGE_API_KEY) {
+    nft_storage_clients.push(new NFTStorageTZip({ token: key }));
+}
 const uploadToLocalIpfs: boolean = ServerConfig.UPLOAD_TO_LOCAL_IPFS;
 
 const fileLikeToFile = (blobLike: any): typeof File => {
@@ -217,14 +217,17 @@ type handlerFunction = (data: any) => Promise<ResultType>;
 
 const uploadToNFTStorage: handlerFunction = async (data: any): Promise<ResultType> => {
     const start_time = performance.now();
+    // Get client id and increase counter.
+    const client_id = request_counter % nft_storage_clients.length;
+    ++request_counter;
     // Store the metadata + files object.
-    const metadata = await client.store(data);
+    const metadata = await nft_storage_clients[client_id].store(data);
     // Sleep for a brief moment before calling get_root_file_from_dir.
     await sleep(250);
     // Get the root file for the directory uploaded by store.
     // it will be the direct CID for the metadata.json.
     const file_cid = await get_root_file_from_dir(metadata.ipnft);
-    console.log("uploadToNFTStorage took " + (performance.now() - start_time).toFixed(2) + "ms");
+    console.log("uploadToNFTStorage(" + client_id + ") took " + (performance.now() - start_time).toFixed(2) + "ms");
 
     return { metdata_uri: `ipfs://${file_cid}`, cid: file_cid };
 }

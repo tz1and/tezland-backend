@@ -35,7 +35,7 @@ class ServerConfig {
 
 const config = new ServerConfig();
 
-console.log("NFTSTORAGE_API_KEY: " + (config.NFTSTORAGE_API_KEY !== [] ? "set" : "not set"))
+console.log("NFTSTORAGE_API_KEY: " + (config.NFTSTORAGE_API_KEY.length !== 0 ? "set" : "not set"))
 console.log("UPLOAD_TO_LOCAL_IPFS: " + config.UPLOAD_TO_LOCAL_IPFS)
 console.log("LOCAL_IPFS_URL: " + config.LOCAL_IPFS_URL)
 console.log("SERVER_PORT: " + config.SERVER_PORT)

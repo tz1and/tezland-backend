@@ -8,7 +8,8 @@
   "scripts": {
     "build": "tsc",
     "start": "cp .env build/.env; cd build; node ./server.js",
-    "dev": "NODE_ENV=development ts-node-dev ./src/dev_server.ts"
+    "dev": "NODE_ENV=development ts-node-dev ./src/dev_server.ts",
+    "staging": "NODE_ENV=staging ts-node-dev ./src/dev_server.ts"
   },
   "dependencies": {
     "body-parser": "^1.19.1",

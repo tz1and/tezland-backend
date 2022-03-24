@@ -12,14 +12,15 @@ if(!isDev()) assert(!cluster.isPrimary);
 
 const server = express();
 
-// Set up router
-const router = express.Router();
-
 // set up CORS
 // TODO: proper domain for prod 
-router.use(cors({
+// TODO: figure out what I mean with that. origin?
+server.use(cors({
     origin: ServerConfig.CORS_ALLOW_ORIGIN
 }));
+
+// Set up router
+const router = express.Router();
 
 // use body-parser
 //router.use(bodyParser.urlencoded({ extended: false }));

@@ -12,12 +12,17 @@ if(!isDev()) assert(!cluster.isPrimary);
 
 const server = express();
 
-// set up CORS
-// TODO: proper domain for prod 
-// TODO: figure out what I mean with that. origin?
-server.use(cors({
-    origin: ServerConfig.CORS_ALLOW_ORIGIN
-}));
+if(isDev()) {
+    console.log("Setting up CORS for dev");
+    // set up CORS
+    const cors_config = cors({
+        origin: ServerConfig.CORS_ALLOW_ORIGIN,
+        methods: [ "POST", "GET" ]
+    });
+
+    server.use(cors_config);
+    //server.options('*', cors_config);
+}
 
 // Set up router
 const router = express.Router();
@@ -28,7 +33,7 @@ router.use(bodyParser.json({limit: '200mb'}));
 
 // the upload to nft.storage upload entry point
 router.post( "/upload", uploadRequest );
-//router.get( "/", defaultRoute );
+router.get( "/", defaultRoute );
 
 server.use("/", router);
 

@@ -22,6 +22,12 @@ class User {
     //public pos: Float32Array = Float32Array.of(0,0,0);
     //public rot: Float32Array = Float32Array.of(0,0,0);
     public transformData: string = '0'.repeat(48);
+    public updated: boolean = false;
+    public just_connected: boolean = true;
+
+    // TODO: maybe ratelimit to disconnect any "misbehaving" clients.
+    // Basically, make sure can's send more than x updates per second.
+    //public update_count: number = 0;
 
     constructor(conn: WebSocket) {
         this.conn = conn;
@@ -57,6 +63,7 @@ const disconnects: Set<string> = new Set();
 async function handleRequest(req: any, user: User): Promise<any> {
     if (req.msg === "hello") {
         user.name = req.user;
+        assert(user.name.length === 36);
         return { msg: "challenge", challenge: user.generateChallenge() };
     } else if (req.msg === "challenge-response") {
         user.authenticate(req.response);
@@ -69,6 +76,7 @@ async function handleRequest(req: any, user: User): Promise<any> {
         if (req.msg === "upd") {
             assert(req.upd.length === 48);
             user.transformData = req.upd;
+            user.updated = true;
             // update pos doesn't respond.
             return;
         }
@@ -111,15 +119,20 @@ function serverTick() {
     //const start_time = performance.now();
     
     // TODO: type this
-    const positons: any = { msg: "position-updates", updates: [] }
+    //const positons: any = { msg: "position-updates", updates: [] }
 
+    const disconnect_updates: any[] = [];
+    const updated_players: any[] = [];
+    const remaining_players: any[] = [];
+
+    // add disconnect messages
     disconnects.forEach((dc) => {
-        const upd: any = {};
-        upd.name = dc;
-        upd.dc = true;
         //upd.pos = c.pos;
         //upd.rot = c.rot;
-        positons.updates.push(upd);
+        disconnect_updates.push({
+            name: dc,
+            dc: true
+        });
     })
 
     disconnects.clear();
@@ -128,19 +141,30 @@ function serverTick() {
         // to be safe, but shouldn't be needed.
         if(!c.connected) return;
 
-        // TODO: type this.
-        const upd: any = {};
-        upd.name = c.name;
-        upd.upd = c.transformData;
-        //upd.pos = c.pos;
-        //upd.rot = c.rot;
-        positons.updates.push(upd);
+        const upd = {
+            name: c.name,
+            upd: c.transformData
+        };
+
+        if (c.updated) {
+            updated_players.push(upd);
+            // flag player as updated.
+            c.updated = false;
+        } else {
+            remaining_players.push(upd);
+        }
     })
 
-    const response = JSON.stringify(positons);
+    const response = JSON.stringify({ msg: "position-updates", updates: disconnect_updates.concat(updated_players) });
+    const response_all = JSON.stringify({ msg: "position-updates", updates: disconnect_updates.concat(updated_players).concat(remaining_players) });
 
     clients.forEach((c) => {
-        c.conn.send(response);
+        // If this player just connected, send the entire list.
+        if(c.just_connected) {
+            c.just_connected = false;
+            c.conn.send(response_all);
+        }
+        else c.conn.send(response);
     })
 
     //const elapsed = performance.now() - start_time;

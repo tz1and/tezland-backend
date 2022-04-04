@@ -29,7 +29,7 @@ const router = express.Router();
 
 // use body-parser
 //router.use(bodyParser.urlencoded({ extended: false }));
-router.use(bodyParser.json({limit: '200mb'}));
+router.use(bodyParser.json({limit: '64mb'}));
 
 // the upload to nft.storage upload entry point
 router.post( "/upload", uploadRequest );

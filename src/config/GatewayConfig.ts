@@ -6,6 +6,7 @@ class GatewayConfig {
     public PG_HOST: string;
     public PG_PORT: number;
     public PG_DATABASE: string;
+    public GATEWAY_CLUSTER_WORKERS: number;
 
     constructor() {
         if(process.env.GATEWAY_SERVER_PORT !== undefined)
@@ -35,6 +36,10 @@ class GatewayConfig {
         if(process.env.PG_DATABASE)
             this.PG_DATABASE = process.env.PG_DATABASE;
         else this.PG_DATABASE = "dipdup";
+
+        if(process.env.GATEWAY_CLUSTER_WORKERS !== undefined)
+            this.GATEWAY_CLUSTER_WORKERS = parseInt(process.env.GATEWAY_CLUSTER_WORKERS);
+        else this.GATEWAY_CLUSTER_WORKERS = 8;
     }
 }
 

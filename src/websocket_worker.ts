@@ -2,7 +2,7 @@ import cluster from 'cluster';
 import WebSocket from 'ws';
 import process from 'process';
 import assert from 'assert';
-import WebsocketConfig from './WebsocketConfig';
+import WebsocketConfig from './config/WebsocketConfig';
 import { isDev } from './utils/Utils';
 import { performance } from 'perf_hooks';
 
@@ -173,4 +173,4 @@ function serverTick() {
 
 setInterval(serverTick, UpdateInterval);
 
-console.log(`WebSocket worker ${process.pid} started`);
+console.log(`WebSocket worker ${process.pid} started at http://localhost:${ WebsocketConfig.WEBSOCKET_SERVER_PORT }`);

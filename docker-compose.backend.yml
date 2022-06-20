@@ -25,6 +25,7 @@ services:
       - IPFS_PATH=/ipfsdata
     volumes:
       - ./ipfsdata:/ipfsdata
+      - ./docker-scripts/001-ipfs-init.sh:/container-init.d/001-ipfs-init.sh
     expose:
       - 4001/tcp
       - 4001/udp

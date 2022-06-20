@@ -1,7 +1,7 @@
 import cluster from 'cluster';
 import process from 'process';
 import { promisify } from 'util';
-import ServerConfig from "./ServerConfig"
+import ServerConfig from "./config/ServerConfig"
 import assert from 'assert';
 import { config as dotenvFlowConfig } from 'dotenv-flow'
 import { isDev } from './utils/Utils';

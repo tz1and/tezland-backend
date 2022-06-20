@@ -1,9 +1,8 @@
 import express from 'express'
-import bodyParser from 'body-parser'
 import cors from 'cors'
 import {  } from './storage/storage'
-import { defaultRoute, uploadRequest } from './requests'
-import ServerConfig from './config/ServerConfig'
+import { defaultRoute, ipfsRequest } from './requests'
+import GatewayConfig from './config/GatewayConfig'
 import cluster from 'cluster'
 import assert from 'assert'
 import { isDev } from './utils/Utils'
@@ -16,7 +15,7 @@ if(isDev()) {
     console.log("Setting up CORS for dev");
     // set up CORS
     const cors_config = cors({
-        origin: ServerConfig.CORS_ALLOW_ORIGIN,
+        origin: GatewayConfig.CORS_ALLOW_ORIGIN,
         methods: [ "POST", "GET" ]
     });
 
@@ -27,18 +26,15 @@ if(isDev()) {
 // Set up router
 const router = express.Router();
 
-// use body-parser
-//router.use(bodyParser.urlencoded({ extended: false }));
-router.use(bodyParser.json({limit: '64mb'}));
-
 // the upload to nft.storage upload entry point
-router.post( "/upload", uploadRequest );
+router.get( "/ipfs/:ipfsCID/:fileName?", ipfsRequest );
+router.get( "/ipfs", defaultRoute );
 router.get( "/", defaultRoute );
 
 server.use("/", router);
 
 // start the Express server
-server.listen( ServerConfig.SERVER_PORT, () => {
-    console.log( `express worker ${process.pid} started at http://localhost:${ ServerConfig.SERVER_PORT }` );
+server.listen( GatewayConfig.GATEWAY_SERVER_PORT, () => {
+    console.log(`gateway worker ${process.pid} started at http://localhost:${ GatewayConfig.GATEWAY_SERVER_PORT }`);
 } );
 

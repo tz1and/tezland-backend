@@ -2,7 +2,7 @@ import { File, NFTStorage, Service, Token } from 'nft.storage'
 import * as ipfs from 'ipfs-http-client';
 import { TimeoutError } from 'ipfs-utils/src/http';
 import { performance } from 'perf_hooks';
-import ServerConfig from '../ServerConfig';
+import ServerConfig from '../config/ServerConfig';
 import { sleep } from '../utils/Utils';
 
 

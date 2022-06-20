@@ -4,3 +4,4 @@ dotenvFlowConfig({ silent: !isDev() });
 
 import './express_worker'
 import './websocket_worker'
+import './gateway_worker'

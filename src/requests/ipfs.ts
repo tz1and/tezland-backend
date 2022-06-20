@@ -1,10 +1,11 @@
 import { Request, Response } from 'express'
 import { performance } from 'perf_hooks';
 import { CID } from 'ipfs-http-client';
+import { Pool, PoolClient } from 'pg';
 import GatewayConfig from '../config/GatewayConfig'
+import { pipeline } from 'stream/promises';
 import http from 'http'
 import assert from 'assert';
-import { Client, Pool, PoolClient } from 'pg';
 
 
 // Create a pg connection pool
@@ -45,7 +46,7 @@ const ipfsUriFromParams = (params: Record<string, any>) => {
         const cid = CID.parse(params['ipfsCID']);
         const fileName = params['fileName'];
 
-        if (fileName) return `ipfs://${cid.toString()}/${fileName}`
+        if (fileName) return `ipfs://${cid.toString()}/${encodeURIComponent(fileName)}`
         else return `ipfs://${cid.toString()}`
     }
     catch (e: any) {
@@ -60,13 +61,14 @@ function localIpfsGatewayUrlFromUri(uri: string) {
     const hash = uri.slice(7);
 
     // re-encode uri
-    const split = decodeURI(hash).split('/');
+    /*const split = decodeURI(hash).split('/');
     const encodedParts = split.map((e) => { 
         return encodeURIComponent(e);
     });
 
     // return the processed result as a local ipfs url.
-    return `http://localhost:8080/ipfs/${encodedParts.join('/')}`;
+    return `http://localhost:8080/ipfs/${encodedParts.join('/')}`;*/
+    return `http://localhost:8080/ipfs/${hash}`;
 }
 
 const setError = (e: any, res: Response) => {
@@ -77,19 +79,19 @@ const setError = (e: any, res: Response) => {
 const checkUriAgainstDb = async (client: PoolClient, uri: string) => {
     // alt: SELECT COUNT(id) FROM item_token_metadata WHERE (artifact_uri = $1) OR (thumbnail_uri = $1) OR (display_uri = $1)
     const res = await client.query('SELECT id FROM item_token_metadata WHERE $1 IN(artifact_uri, thumbnail_uri, display_uri)', [uri])
-    if (res.rows.length === 0) throw new Error("Invalid Uri");
+    if (res.rows.length === 0) throw new Error(`Invalid Uri: ${uri}`);
 }
 
 export const ipfsRequest = async (req: Request, res: Response) => {
-    console.log("handling ipfs download request from " + req.ip);
     const start_time = performance.now();
 
     try {
+        const uri = ipfsUriFromParams(req.params);
+        console.log(`IPFS download request for ${uri} from ${req.ip}`);
+
         const client = await pool.connect()
 
         try {
-            const uri = ipfsUriFromParams(req.params);
-
             await checkUriAgainstDb(client, uri);
 
             const url = localIpfsGatewayUrlFromUri(uri);
@@ -98,7 +100,8 @@ export const ipfsRequest = async (req: Request, res: Response) => {
 
             assert(ipfsRes.statusCode);
             res.status(ipfsRes.statusCode);
-            ipfsRes.pipe(res);
+
+            await pipeline(ipfsRes, res);
         }
         catch(e: any) {
             setError(e, res);

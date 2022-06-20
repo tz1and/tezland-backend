@@ -21,7 +21,6 @@ services:
     restart: always
     image: ipfs/go-ipfs:latest
     environment:
-      #- IPFS_SWARM_KEY=/key/swarm/psk/1.0.0/\n/base16/\n925e93e58f6cb4aa7a5660e5166a3081f84d40a6888f70d49fdbc68f0f10362a
       - IPFS_PATH=/ipfsdata
     volumes:
       - ./ipfsdata:/ipfsdata
@@ -36,6 +35,7 @@ services:
       options:
         max-size: 10m
         max-file: "5"
+    command: ["daemon", "--migrate=true", "--agent-version-suffix=docker", "--enable-gc"]
 
 networks:
   default:

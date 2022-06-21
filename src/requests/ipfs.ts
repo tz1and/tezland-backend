@@ -115,5 +115,6 @@ export const ipfsRequest = async (req: Request, res: Response) => {
     }
     catch(e: any) {
         console.error("PoolClient failed: " + e.message);
+        if (!res.headersSent) setError(e, res);
     }
 }

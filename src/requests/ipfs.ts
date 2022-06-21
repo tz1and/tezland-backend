@@ -25,6 +25,12 @@ pool.on('error', (err, client) => {
 })
 
 
+/**
+ * Recursively follow redirects.
+ * @param url 
+ * @param resolve 
+ * @param reject 
+ */
 const getFollowRedirects = (url: string, resolve: (value: http.IncomingMessage) => void, reject: (reason?: any) => void) => {
     http.get(url, (res) => {
         // if any other status codes are returned, those needed to be added here
@@ -37,10 +43,20 @@ const getFollowRedirects = (url: string, resolve: (value: http.IncomingMessage) 
     });
 }
 
+/**
+ * Returns a promise for following redirects.
+ * @param url 
+ * @returns 
+ */
 async function getResponseFollowRedirects(url: string): Promise<http.IncomingMessage> {
     return new Promise((resolve, reject) => getFollowRedirects(url, resolve, reject));
 }
 
+/**
+ * Reconstruct IPFS URI from request params.
+ * @param params 
+ * @returns 
+ */
 const ipfsUriFromParams = (params: Record<string, any>) => {
     try {
         const cid = CID.parse(params['ipfsCID']);
@@ -54,6 +70,12 @@ const ipfsUriFromParams = (params: Record<string, any>) => {
     }
 }
 
+/**
+ * Re-encode and IPFS CID and path that will be accepted by the IPFS gateway.
+ * Encodes '#', etc...
+ * @param uri 
+ * @returns 
+ */
 const decodeSplitEncodeURI = (uri: string) => {
     const split = decodeURI(uri).split('/');
     const encodedParts = split.map((e) => { 
@@ -62,6 +84,11 @@ const decodeSplitEncodeURI = (uri: string) => {
     return encodedParts.join('/');
 }
 
+/**
+ * Convert and IPFS URI to a link to the local IPFS gateway.
+ * @param uri 
+ * @returns 
+ */
 const localIpfsGatewayUrlFromUri = (uri: string) => {
     assert(uri.startsWith('ipfs://'), "invalid ipfs uri");
 
@@ -72,17 +99,32 @@ const localIpfsGatewayUrlFromUri = (uri: string) => {
     return `${GatewayConfig.LOCAL_IPFS_URL}:8080/ipfs/${decodeSplitEncodeURI(hash)}`;
 }
 
+/**
+ * Prints error to log and sets response text and headers if not sent yet.
+ * @param message 
+ * @param res 
+ */
 const setError = (message: string, res: Response) => {
     console.error("IPFS download failed: " + message);
-    res.type('txt').status(500).send("IPFS download failed: " + message);
+    if (!res.headersSent) res.type('txt').status(500).send("IPFS download failed: " + message);
 }
 
+/**
+ * Checks if an artifact/image URI is referenced in tz1and NFTs.
+ * @param client 
+ * @param uri 
+ */
 const checkUriAgainstDb = async (client: PoolClient, uri: string) => {
     // alt: SELECT COUNT(id) FROM item_token_metadata WHERE (artifact_uri = $1) OR (thumbnail_uri = $1) OR (display_uri = $1)
     const res = await client.query('SELECT id FROM item_token_metadata WHERE $1 IN(artifact_uri, thumbnail_uri, display_uri)', [uri])
     if (res.rows.length === 0) throw new Error(`Invalid Uri: ${uri}`);
 }
 
+/**
+ * Handle incoming IPFS gateway-alike requests.
+ * @param req 
+ * @param res 
+ */
 export const ipfsRequest = async (req: Request, res: Response) => {
     const start_time = performance.now();
 
@@ -112,6 +154,6 @@ export const ipfsRequest = async (req: Request, res: Response) => {
         }
     }
     catch(e: any) {
-        if (!res.headersSent) setError("PoolClient failed: " + e.message, res);
+        setError("PoolClient failed: " + e.message, res);
     }
 }

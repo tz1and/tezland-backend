@@ -176,7 +176,7 @@ const unreferenceData = (data: any): any => {
 async function get_root_file_from_dir(cid: string): Promise<string> {
     console.log("get_root_file_from_dir: ", cid)
     try {
-        const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL, timeout: 10000 });
+        const ipfs_client = ipfs.create({ url: `${ServerConfig.LOCAL_IPFS_URL}:5001`, timeout: 10000 });
 
         const max_num_retries = 5;
         let num_retries = 0;
@@ -235,7 +235,7 @@ const uploadToNFTStorage: handlerFunction = async (data: any): Promise<ResultTyp
 const uploadToLocal = async (data: any): Promise<ResultType> => {
     const start_time = performance.now()
 
-    const ipfs_client = ipfs.create({ url: ServerConfig.LOCAL_IPFS_URL, timeout: 10000 });
+    const ipfs_client = ipfs.create({ url: `${ServerConfig.LOCAL_IPFS_URL}:5001`, timeout: 10000 });
 
     // first we upload every blob in the object
     const traverse = async (jsonObj: any) => {

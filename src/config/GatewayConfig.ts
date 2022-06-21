@@ -1,5 +1,6 @@
 class GatewayConfig {
     public GATEWAY_SERVER_PORT: number;
+    public LOCAL_IPFS_URL: string;
     public CORS_ALLOW_ORIGIN: string;
     public PG_USER: string;
     public PG_PASSWORD: string;
@@ -12,6 +13,10 @@ class GatewayConfig {
         if(process.env.GATEWAY_SERVER_PORT !== undefined)
             this.GATEWAY_SERVER_PORT = parseInt(process.env.GATEWAY_SERVER_PORT);
         else this.GATEWAY_SERVER_PORT = 9053;
+
+        if(process.env.LOCAL_IPFS_URL !== undefined)
+            this.LOCAL_IPFS_URL = process.env.LOCAL_IPFS_URL;
+        else this.LOCAL_IPFS_URL = "";
 
         if(process.env.CORS_ALLOW_ORIGIN)
             this.CORS_ALLOW_ORIGIN = process.env.CORS_ALLOW_ORIGIN;
@@ -46,6 +51,7 @@ class GatewayConfig {
 const config = new GatewayConfig();
 
 console.log("GATEWAY_SERVER_PORT: " + config.GATEWAY_SERVER_PORT)
+console.log("LOCAL_IPFS_URL: " + config.LOCAL_IPFS_URL)
 console.log("CORS_ALLOW_ORIGIN: " + config.CORS_ALLOW_ORIGIN)
 console.log("PG_USER: " + config.PG_USER)
 console.log("PG_HOST: " + config.PG_HOST)

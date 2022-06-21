@@ -68,7 +68,7 @@ function localIpfsGatewayUrlFromUri(uri: string) {
 
     // return the processed result as a local ipfs url.
     return `http://localhost:8080/ipfs/${encodedParts.join('/')}`;*/
-    return `http://localhost:8080/ipfs/${hash}`;
+    return `${GatewayConfig.LOCAL_IPFS_URL}:8080/ipfs/${hash}`;
 }
 
 const setError = (e: any, res: Response) => {
@@ -86,12 +86,12 @@ export const ipfsRequest = async (req: Request, res: Response) => {
     const start_time = performance.now();
 
     try {
-        const uri = ipfsUriFromParams(req.params);
-        console.log(`IPFS download request for ${uri} from ${req.ip}`);
-
         const client = await pool.connect()
 
         try {
+            const uri = ipfsUriFromParams(req.params);
+            console.log(`IPFS download request for ${uri} from ${req.ip}`);
+
             await checkUriAgainstDb(client, uri);
 
             const url = localIpfsGatewayUrlFromUri(uri);
@@ -107,12 +107,11 @@ export const ipfsRequest = async (req: Request, res: Response) => {
             setError(e, res);
         }
         finally {
-            client.release()
+            console.log("ipfsRequest took " + (performance.now() - start_time).toFixed(2) + "ms");
+            client.release();
         }
     }
     catch(e: any) {
-        setError(e, res);
+        console.error("PoolClient failed: " + e.message);
     }
-
-    console.log("ipfsRequest took " + (performance.now() - start_time).toFixed(2) + "ms");
 }

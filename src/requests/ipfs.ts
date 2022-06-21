@@ -46,7 +46,7 @@ const ipfsUriFromParams = (params: Record<string, any>) => {
         const cid = CID.parse(params['ipfsCID']);
         const fileName = params['fileName'];
 
-        if (fileName) return `ipfs://${cid.toString()}/${encodeURIComponent(fileName)}`
+        if (fileName) return `ipfs://${cid.toString()}/${encodeURI(fileName)}`
         else return `ipfs://${cid.toString()}`
     }
     catch (e: any) {
@@ -54,21 +54,22 @@ const ipfsUriFromParams = (params: Record<string, any>) => {
     }
 }
 
-function localIpfsGatewayUrlFromUri(uri: string) {
+const decodeSplitEncodeURI = (uri: string) => {
+    const split = decodeURI(uri).split('/');
+    const encodedParts = split.map((e) => { 
+        return encodeURIComponent(e);
+    });
+    return encodedParts.join('/');
+}
+
+const localIpfsGatewayUrlFromUri = (uri: string) => {
     assert(uri.startsWith('ipfs://'), "invalid ipfs uri");
 
     // remove 'ipfs://'
     const hash = uri.slice(7);
 
-    // re-encode uri
-    /*const split = decodeURI(hash).split('/');
-    const encodedParts = split.map((e) => { 
-        return encodeURIComponent(e);
-    });
-
-    // return the processed result as a local ipfs url.
-    return `http://localhost:8080/ipfs/${encodedParts.join('/')}`;*/
-    return `${GatewayConfig.LOCAL_IPFS_URL}:8080/ipfs/${hash}`;
+    // re-encode and return uri
+    return `${GatewayConfig.LOCAL_IPFS_URL}:8080/ipfs/${decodeSplitEncodeURI(hash)}`;
 }
 
 const setError = (e: any, res: Response) => {
@@ -102,12 +103,13 @@ export const ipfsRequest = async (req: Request, res: Response) => {
             res.status(ipfsRes.statusCode);
 
             await pipeline(ipfsRes, res);
+
+            console.log("ipfsRequest finished in " + (performance.now() - start_time).toFixed(2) + "ms");
         }
         catch(e: any) {
             setError(e, res);
         }
         finally {
-            console.log("ipfsRequest took " + (performance.now() - start_time).toFixed(2) + "ms");
             client.release();
         }
     }

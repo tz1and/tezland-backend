@@ -72,9 +72,9 @@ const localIpfsGatewayUrlFromUri = (uri: string) => {
     return `${GatewayConfig.LOCAL_IPFS_URL}:8080/ipfs/${decodeSplitEncodeURI(hash)}`;
 }
 
-const setError = (e: any, res: Response) => {
-    console.error("IPFS download failed: " + e.message);
-    res.type('txt').status(500).send("IPFS download failed: " + e.message);
+const setError = (message: string, res: Response) => {
+    console.error("IPFS download failed: " + message);
+    res.type('txt').status(500).send("IPFS download failed: " + message);
 }
 
 const checkUriAgainstDb = async (client: PoolClient, uri: string) => {
@@ -87,12 +87,10 @@ export const ipfsRequest = async (req: Request, res: Response) => {
     const start_time = performance.now();
 
     try {
-        const client = await pool.connect()
+        const client = await pool.connect();
 
         try {
             const uri = ipfsUriFromParams(req.params);
-            console.log(`IPFS download request for ${uri} from ${req.ip}`);
-
             await checkUriAgainstDb(client, uri);
 
             const url = localIpfsGatewayUrlFromUri(uri);
@@ -104,17 +102,16 @@ export const ipfsRequest = async (req: Request, res: Response) => {
 
             await pipeline(ipfsRes, res);
 
-            console.log("ipfsRequest finished in " + (performance.now() - start_time).toFixed(2) + "ms");
+            console.log(`IPFS download for ${uri} finished in ${(performance.now() - start_time).toFixed(2)}ms`);
         }
         catch(e: any) {
-            setError(e, res);
+            setError(e.message, res);
         }
         finally {
             client.release();
         }
     }
     catch(e: any) {
-        console.error("PoolClient failed: " + e.message);
-        if (!res.headersSent) setError(e, res);
+        if (!res.headersSent) setError("PoolClient failed: " + e.message, res);
     }
 }

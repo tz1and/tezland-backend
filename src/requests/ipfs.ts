@@ -57,7 +57,7 @@ async function getResponseFollowRedirects(url: string): Promise<http.IncomingMes
  * @param params 
  * @returns 
  */
-const ipfsUriFromParams = (params: Record<string, any>) => {
+export const ipfsUriFromParams = (params: Record<string, any>) => {
     try {
         const cid = CID.parse(params['ipfsCID']);
         const fileName = params['fileName'];
@@ -89,8 +89,8 @@ const decodeSplitEncodeURI = (uri: string) => {
  * @param uri 
  * @returns 
  */
-const localIpfsGatewayUrlFromUri = (uri: string) => {
-    assert(uri.startsWith('ipfs://'), "invalid ipfs uri");
+export const localIpfsGatewayUrlFromUri = (uri: string) => {
+    assert(uri.startsWith('ipfs://'), `Invalid ipfs uri: ${uri}`);
 
     // remove 'ipfs://'
     const hash = uri.slice(7);

@@ -10,6 +10,7 @@ Makefile
 # ignore project specific
 node_modules/
 build/
+TODO.txt
 
 # env files
 .env*

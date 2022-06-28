@@ -1,6 +1,7 @@
 build/
 node_modules/
 yarn-error.log
+TODO.txt
 
 # local and prod env files
 .env.local

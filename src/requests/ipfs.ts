@@ -40,6 +40,8 @@ const getFollowRedirects = (url: string, resolve: (value: http.IncomingMessage) 
         }
 
         resolve(res);
+    }).on("error", (err) => {
+        reject(err);
     });
 }
 

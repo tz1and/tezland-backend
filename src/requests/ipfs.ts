@@ -14,8 +14,24 @@ const pool = new Pool({
     password: GatewayConfig.PG_PASSWORD,
     host: GatewayConfig.PG_HOST,
     port: GatewayConfig.PG_PORT,
-    database: GatewayConfig.PG_DATABASE
+    database: GatewayConfig.PG_DATABASE,
+    max: 20
 })
+
+/**
+ * Possible resource leak on ipfs worker threads:
+ * tezland-backend                | IPFS download failed: PoolClient failed: sorry, too many clients already
+ * tezland-backend                | IPFS download failed: PoolClient failed: sorry, too many clients already
+ * tezland-backend                | IPFS download failed: PoolClient failed: sorry, too many clients already
+ * tezland-backend                | IPFS download failed: PoolClient failed: sorry, too many clients already
+ * tezland-backend                | IPFS download failed: PoolClient failed: sorry, too many clients already
+ * tezland-backend                | IPFS download failed: PoolClient failed: sorry, too many clients already
+ * 
+ * Could also be related to:
+ * tezland-backend                | IPFS download failed: Premature close
+ * 
+ * I don't think this can be fixed by increasing the max on the pg Pool() - but I could try it.
+ */
 
 // the pool will emit an error on behalf of any idle clients
 // it contains if a backend error or network partition happens
@@ -109,6 +125,8 @@ export const localIpfsGatewayUrlFromUri = (uri: string) => {
 const setError = (message: string, res: Response) => {
     console.error("IPFS download failed: " + message);
     if (!res.headersSent) res.type('txt').status(500).send("IPFS download failed: " + message);
+
+    // TODO: verify if (!res.headersSent) always sets the error.
 }
 
 /**
@@ -118,7 +136,7 @@ const setError = (message: string, res: Response) => {
  */
 const checkUriAgainstDb = async (client: PoolClient, uri: string) => {
     // alt: SELECT COUNT(id) FROM item_token_metadata WHERE (artifact_uri = $1) OR (thumbnail_uri = $1) OR (display_uri = $1)
-    const res = await client.query('SELECT id FROM item_token_metadata WHERE $1 IN(artifact_uri, thumbnail_uri, display_uri)', [uri])
+    const res = await client.query('SELECT 1 FROM item_token_metadata WHERE $1 IN(artifact_uri, thumbnail_uri, display_uri)', [uri])
     if (res.rows.length === 0) throw new Error(`Invalid Uri: ${uri}`);
 }
 

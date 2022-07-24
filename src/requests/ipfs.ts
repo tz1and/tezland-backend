@@ -15,7 +15,7 @@ const pool = new Pool({
     host: GatewayConfig.PG_HOST,
     port: GatewayConfig.PG_PORT,
     database: GatewayConfig.PG_DATABASE,
-    max: 20
+    //max: 10 // NOTE: 10 is the default.
 })
 
 /**

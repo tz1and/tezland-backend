@@ -31,30 +31,15 @@ class NFTStorageTZip extends NFTStorage {
         return Token.Token.encode(input)
     }
 
-    static override async store(service: Service, metadata: any) {
+    static override async store(service: Service, metadata: any, options?: any) {
         const { token, car } = await NFTStorageTZip.encodeNFT(metadata)
-        await NFTStorageTZip.storeCar(service, car)
+        await NFTStorageTZip.storeCar(service, car, options)
         return token
     }
 
-    override store(token: any) {
-        return NFTStorageTZip.store(this, token)
+    override store(token: any, options?: any) {
+        return NFTStorageTZip.store(this, token, options)
     }
-
-    /*static override async storeBlob(service: Service, blob: Blob) {
-        const blockstore = new Blockstore()
-        let cidString
-
-        try {
-            const { cid, car } = await NFTStorageTZip.encodeBlob(blob, { blockstore })
-            await NFTStorageTZip.storeCar(service, car)
-            cidString = cid.toString()
-        } finally {
-            await blockstore.close()
-        }
-
-        return cidString
-    }*/
 }
 
 // TODO: this is kind of a nasty workaround, but it will probably work for now :)
@@ -65,32 +50,28 @@ for (const key of ServerConfig.NFTSTORAGE_API_KEY) {
 }
 const uploadToLocalIpfs: boolean = ServerConfig.UPLOAD_TO_LOCAL_IPFS;
 
-const fileLikeToFile = (blobLike: any): typeof File => {
+const fileLikeToFile = (fileLike: any): typeof File => {
     // Make sure it's a blobLike
-    if(blobLike["dataUri"] === undefined)
-        throw new Error("dataUri missing on fileLike: " + blobLike);
+    if(fileLike["dataUri"] === undefined)
+        throw new Error("dataUri missing on fileLike: " + fileLike);
 
-    if(blobLike["type"] === undefined)
-        throw new Error("type missing on fileLike: " + blobLike);
+    if(fileLike["type"] === undefined)
+        throw new Error("type missing on fileLike: " + fileLike);
 
-    if(blobLike["name"] === undefined)
-        throw new Error("name missing on fileLike: " + blobLike);
+    if(fileLike["name"] === undefined)
+        throw new Error("name missing on fileLike: " + fileLike);
 
-    const dataUri  = blobLike["dataUri"];
-    const mimeType = blobLike["type"];
-    const fileName = blobLike["name"];
+    const dataUri  = fileLike["dataUri"];
+    const mimeType = fileLike["type"];
+    const fileName = fileLike["name"];
 
     // TODO: this is pretty inefficient. rewrite sometime, maybe.
     // convert base64 to raw binary data held in a string
     var buf = Buffer.from(dataUri.split(',')[1], 'base64')
   
-    // separate out the mime component
-    // NOTE: we don't trust the mimeType in the dataUri
-    //var mimeString = dataUri.split(',')[0].split(':')[1].split(';')[0]
-  
     // write the ArrayBuffer to a blob, and you're done
-    var blob = new File([buf], fileName, {type: mimeType});
-    return blob;
+    var file = new File([buf], fileName, {type: mimeType});
+    return file;
 }
 
 function isFileLike(input: any) {
@@ -134,10 +115,9 @@ function isPlainObject(input: any){
 }
 
 const prepareData = (data: any): any => {
-    // iterate over object props
+    // NOTE: only top level objects can be FileLike
     for (var property in data) {
-        // if it's type object and has a "blob" prop,
-        // convert it to a blob.
+        // If it's type object and a FileLike, convert it to a file.
         if(isPlainObject(data[property]) && isFileLike(data[property])) {
             data[property] = fileLikeToFile(data[property]);
         }
@@ -178,7 +158,7 @@ async function get_root_file_from_dir(cid: string): Promise<string> {
     try {
         const ipfs_client = ipfs.create({ url: `${ServerConfig.LOCAL_IPFS_URL}:5001`, timeout: 10000 });
 
-        const max_num_retries = 5;
+        const max_num_retries = 10;
         let num_retries = 0;
         while(num_retries < max_num_retries) {
             try {

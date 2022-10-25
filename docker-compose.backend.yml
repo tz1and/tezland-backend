@@ -19,7 +19,7 @@ services:
   backend-ipfs:
     container_name: backend-ipfs
     restart: always
-    image: ipfs/go-ipfs:latest
+    image: ipfs/kubo:latest
     environment:
       - IPFS_PATH=/ipfsdata
     volumes:

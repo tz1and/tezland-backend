@@ -2085,10 +2085,10 @@ negotiator@0.6.3:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
 
-nft.storage@6.3.0:
-  version "6.3.0"
-  resolved "https://registry.yarnpkg.com/nft.storage/-/nft.storage-6.3.0.tgz#3413e2e2b8a4c6461a6b27f385ee650458551d2c"
-  integrity sha512-4E2ZTZfFIxH5mn6/NSnr/kat86CVUJdkgpS6AiLjVA6d0eMVuimSKdLGsL4bp/P2X11RyRzEakSKOLgw2KE5Eg==
+nft.storage@^6.0.0:
+  version "6.4.1"
+  resolved "https://registry.yarnpkg.com/nft.storage/-/nft.storage-6.4.1.tgz#262faa3ba67970cbdd48480aa048d96671c6ccb4"
+  integrity sha512-UwZ+QgDCr58X+vHN4BydqdB89M8Vaza+vkWR9RatC3rXuDfIyYE5T7oOV53tbiuhA8x5Yi56tlG3NI8wLfOO1A==
   dependencies:
     "@ipld/car" "^3.2.3"
     "@ipld/dag-cbor" "^6.0.13"
@@ -2098,6 +2098,7 @@ nft.storage@6.3.0:
     "@web-std/form-data" "^3.0.0"
     carbites "^1.0.6"
     ipfs-car "^0.6.2"
+    it-pipe "^1.1.0"
     multiformats "^9.6.4"
     p-retry "^4.6.1"
     streaming-iterables "^6.0.0"

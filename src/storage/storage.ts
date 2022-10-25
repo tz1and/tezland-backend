@@ -23,27 +23,6 @@ const validateTZip12 = ({ name, description, decimals }: { name: string, descrip
     }
 }
 
-/**
- * TODO: currently nft.storage is locked to 6.3.0 because of some issue where
- * uploaded directories can't be ipfs ls-ed.
-class NFTStorageTZip extends NFTStorage {
-    static override async encodeNFT(input: any) {
-        validateTZip12(input)
-        return Token.Token.encode(input)
-    }
-
-    static override async store(service: Service, metadata: any) {
-        const { token, car } = await NFTStorageTZip.encodeNFT(metadata)
-        await NFTStorageTZip.storeCar(service, car)
-        return token
-    }
-
-    override store(token: any) {
-        return NFTStorageTZip.store(this, token)
-    }
-}
- */
-
 // extend NFTStorage to allow us to supply our own validation while keeping
 // the simplicity of the store() function.
 class NFTStorageTZip extends NFTStorage {
@@ -52,14 +31,14 @@ class NFTStorageTZip extends NFTStorage {
         return Token.Token.encode(input)
     }
 
-    static override async store(service: Service, metadata: any) {
+    static override async store(service: Service, metadata: any, options?: any) {
         const { token, car } = await NFTStorageTZip.encodeNFT(metadata)
-        await NFTStorageTZip.storeCar(service, car)
+        await NFTStorageTZip.storeCar(service, car, options)
         return token
     }
 
-    override store(token: any) {
-        return NFTStorageTZip.store(this, token)
+    override store(token: any, options?: any) {
+        return NFTStorageTZip.store(this, token, options)
     }
 }
 

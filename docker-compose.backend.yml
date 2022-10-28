@@ -19,12 +19,16 @@ services:
   backend-ipfs:
     container_name: backend-ipfs
     restart: always
-    image: ipfs/kubo:latest
+    image: ipfs/kubo:v0.15.0
     environment:
       - IPFS_PATH=/ipfsdata
     volumes:
       - ./ipfsdata:/ipfsdata
       - ./docker-scripts/001-ipfs-init.sh:/container-init.d/001-ipfs-init.sh
+    ports:
+      - "4001:4001"
+      - "4001:4001/udp"
+      - "5001:5001"
     expose:
       - 4001/tcp
       - 4001/udp

@@ -29,12 +29,6 @@ services:
       - "4001:4001"
       - "4001:4001/udp"
       - "5001:5001"
-    expose:
-      - 4001/tcp
-      - 4001/udp
-      - 5001/tcp
-      - 8080/tcp
-      - 8081/tcp
     logging: &ipfs-logging
       options:
         max-size: 10m

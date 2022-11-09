@@ -151,8 +151,10 @@ const unreferenceData = (data: any): any => {
     return data;
 }
 
-// if it's a directory path, get the root file
-// and use that to mint.
+
+//
+// Get root file from dag using ls.
+//
 async function get_root_file_from_dir(cid: string): Promise<string> {
     console.log("get_root_file_from_dir: ", cid)
     try {
@@ -185,6 +187,40 @@ async function get_root_file_from_dir(cid: string): Promise<string> {
 }
 
 //
+// Resolve path to CID using dag.resolve.
+//
+async function resolve_path_to_cid(path: string): Promise<string> {
+    console.log("resolve_path_to_cid: ", path)
+    try {
+        const ipfs_client = ipfs.create({ url: `${ServerConfig.LOCAL_IPFS_URL}:5001`, timeout: 10000 });
+
+        const max_num_retries = 10;
+        let num_retries = 0;
+        while(num_retries < max_num_retries) {
+            try {
+                const resolve_result = await ipfs_client.dag.resolve(path);
+
+                // If there's a remainder path, something probably went wrong.
+                if (resolve_result.remainderPath && resolve_result.remainderPath.length > 0)
+                    throw new Error("Remainder path: " + resolve_result.remainderPath);
+
+                return resolve_result.cid.toString();
+            } catch (e) {
+                if (e instanceof TimeoutError) {
+                    num_retries++
+                    console.log("retrying ipfs.dag.resolve");
+                } else {
+                    throw e; // let others bubble up
+                }
+            }
+        }
+        throw new Error("Retries = " + max_num_retries);
+    } catch(e: any) {
+        throw new Error("Failed to resolve path: " + e.message);
+    }
+}
+
+//
 // Upload handlers
 //
 
@@ -206,7 +242,8 @@ const uploadToNFTStorage: handlerFunction = async (data: any): Promise<ResultTyp
     await sleep(250);
     // Get the root file for the directory uploaded by store.
     // it will be the direct CID for the metadata.json.
-    const file_cid = await get_root_file_from_dir(metadata.ipnft);
+    //const file_cid = await get_root_file_from_dir(metadata.ipnft);
+    const file_cid = await resolve_path_to_cid(`${metadata.ipnft}/metadata.json`);
     console.log("uploadToNFTStorage(" + client_id + ") took " + (performance.now() - start_time).toFixed(2) + "ms");
 
     return { metdata_uri: `ipfs://${file_cid}`, cid: file_cid };

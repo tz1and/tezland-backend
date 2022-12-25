@@ -72,7 +72,6 @@ const nft_storage_clients: NFTStorage[] = [];
 for (const key of ServerConfig.NFTSTORAGE_API_KEY) {
     nft_storage_clients.push(new NFTStorage({ token: key }));
 }
-const uploadToLocalIpfs: boolean = ServerConfig.UPLOAD_TO_LOCAL_IPFS;
 
 const fileLikeToFile = (fileLike: any): typeof File => {
     // Make sure it's a blobLike
@@ -252,12 +251,12 @@ type ResultType = {
 export const uploadToIpfs = async (req_body: any): Promise<ResultType> => {
     const data = prepareData(req_body);
 
-    const client = uploadToLocalIpfs ? undefined : (() => {
+    const client = ServerConfig.UPLOAD_TO_NFT_STORAGE ? (() => {
         // Get client id and increase counter.
         const client_id = request_counter % nft_storage_clients.length;
         ++request_counter;
         return nft_storage_clients[client_id];
-    })()
+    })() : undefined
 
     // Create ipfs http client.
     const local_client = ipfs.create({ url: `${ServerConfig.LOCAL_IPFS_URL}:5001`, timeout: 30000 });

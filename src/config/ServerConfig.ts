@@ -1,6 +1,6 @@
 class ServerConfig {
     public NFTSTORAGE_API_KEY: string[];
-    public UPLOAD_TO_LOCAL_IPFS: boolean;
+    public UPLOAD_TO_NFT_STORAGE: boolean;
     public LOCAL_IPFS_URL: string;
     public SERVER_PORT: number;
     public CORS_ALLOW_ORIGIN: string;
@@ -11,9 +11,9 @@ class ServerConfig {
             this.NFTSTORAGE_API_KEY = process.env.NFTSTORAGE_API_KEY.split(',');
         else this.NFTSTORAGE_API_KEY = [];
 
-        if(process.env.UPLOAD_TO_LOCAL_IPFS !== undefined)
-            this.UPLOAD_TO_LOCAL_IPFS = process.env.UPLOAD_TO_LOCAL_IPFS !== "0" && process.env.UPLOAD_TO_LOCAL_IPFS !== "FALSE";
-        else this.UPLOAD_TO_LOCAL_IPFS = false;
+        if(process.env.UPLOAD_TO_NFT_STORAGE !== undefined)
+            this.UPLOAD_TO_NFT_STORAGE = process.env.UPLOAD_TO_NFT_STORAGE !== "0" && process.env.UPLOAD_TO_NFT_STORAGE !== "FALSE";
+        else this.UPLOAD_TO_NFT_STORAGE = false;
 
         if(process.env.LOCAL_IPFS_URL !== undefined)
             this.LOCAL_IPFS_URL = process.env.LOCAL_IPFS_URL;
@@ -36,7 +36,7 @@ class ServerConfig {
 const config = new ServerConfig();
 
 console.log("NFTSTORAGE_API_KEY: " + (config.NFTSTORAGE_API_KEY.length !== 0 ? "set" : "not set"))
-console.log("UPLOAD_TO_LOCAL_IPFS: " + config.UPLOAD_TO_LOCAL_IPFS)
+console.log("UPLOAD_TO_NFT_STORAGE: " + config.UPLOAD_TO_NFT_STORAGE)
 console.log("LOCAL_IPFS_URL: " + config.LOCAL_IPFS_URL)
 console.log("SERVER_PORT: " + config.SERVER_PORT)
 console.log("CORS_ALLOW_ORIGIN: " + config.CORS_ALLOW_ORIGIN)

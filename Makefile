@@ -1,5 +1,5 @@
 docker-build:
-	docker-compose -f docker-compose.backend.yml build
+	docker-compose -f docker-compose.backend.yml build --pull
 
 docker-up:
 	docker-compose -f docker-compose.backend.yml up -d

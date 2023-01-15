@@ -9,7 +9,9 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitAny": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    /* Needed for colyseus */
+    "experimentalDecorators": true
   },
   "exclude": ["node_modules", "dist", "test"],
   "include": ["src"]

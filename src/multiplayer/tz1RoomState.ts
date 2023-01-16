@@ -1,5 +1,10 @@
 import { MapSchema, Schema, type } from "@colyseus/schema";
 
+export type ChatMessage = {
+    from: string | null;
+    msg: string;
+}
+
 export class Player extends Schema {
     @type("number") x: number = 0;
     @type("number") y: number = 0;
@@ -9,7 +14,7 @@ export class Player extends Schema {
     @type("number") rot_y: number = 0;
     @type("number") rot_z: number = 0;
 
-    @type("string") name: string = "Guest";
+    @type("string") name: string = "";
 }
 
 

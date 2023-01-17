@@ -3,7 +3,8 @@ import { ChatMessage, Player, tz1RoomState } from "./tz1RoomState";
 
 
 function containsURL(msg: string): boolean {
-    const urlCheck = /((ht|f)tp(s)?:\/\/)?(w{0,3}\.)?([a-zA-Z0-9_]*@)?([a-zA-Z0-9_\-\.\:\#\/\~\}]+(\.[a-zA-Z]*){2,}|localhost)(:[1-9][0-9]*)?(\/[a-zA-Z0-9_\-\.\:\#\/\~\}]*)?(\?[a-zA-Z0-9_=&-]*)?/gi;
+    //const urlCheck = /((ht|f)tp(s)?:\/\/)?(w{0,3}\.)?([a-zA-Z0-9_]*@)?([a-zA-Z0-9_\-\.\:\#\/\~\}]+(\.[a-zA-Z]*){2,}|localhost)(:[1-9][0-9]*)?(\/[a-zA-Z0-9_\-\.\:\#\/\~\}]*)?(\?[a-zA-Z0-9_=&-]*)?/gi;
+    const urlCheck = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi
     const matches = msg.match(urlCheck);
     if (matches && matches.length > 0) return true;
     return false

@@ -1,5 +1,5 @@
 # build app
-FROM node:16-alpine as build
+FROM node:18-alpine as build
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN yarn install
 RUN yarn build
 
 # build prod
-FROM node:16-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 

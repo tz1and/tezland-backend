@@ -32,7 +32,7 @@ class GatewayConfig {
 
         if(process.env.PG_HOST)
             this.PG_HOST = process.env.PG_HOST;
-        else this.PG_HOST = "localhost";
+        else this.PG_HOST = "127.0.0.1"; // NOTE: localhost reloves to ipv6 on node 18
 
         if(process.env.PG_PORT !== undefined)
             this.PG_PORT = parseInt(process.env.PG_PORT);

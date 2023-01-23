@@ -1,6 +1,5 @@
 import express from 'express'
 import cors from 'cors'
-import {  } from './storage/storage'
 import { defaultRoute, ipfsRequest } from './requests'
 import GatewayConfig from './config/GatewayConfig'
 import cluster from 'cluster'

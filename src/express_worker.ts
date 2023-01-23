@@ -1,7 +1,6 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
-import {  } from './storage/storage'
 import { defaultRoute, uploadRequest } from './requests'
 import ServerConfig from './config/ServerConfig'
 import cluster from 'cluster'

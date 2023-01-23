@@ -1,7 +1,8 @@
 import { CarReader, File, NFTStorage, Token } from 'nft.storage'
 import { TreewalkCarJoiner } from 'carbites/treewalk'
 import * as ipfs from 'ipfs-http-client';
-import { TimeoutError } from 'ipfs-utils/src/http';
+import ipfs_http from 'ipfs-utils/src/http';
+const { TimeoutError } = ipfs_http;
 import { performance } from 'perf_hooks';
 import ServerConfig from '../config/ServerConfig';
 import assert from 'assert';

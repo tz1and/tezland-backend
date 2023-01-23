@@ -1,7 +1,8 @@
 import { Request, Response } from 'express'
 import { performance } from 'perf_hooks';
 import { CID } from 'ipfs-http-client';
-import { Pool, PoolClient } from 'pg';
+import pg, { PoolClient } from 'pg';
+const { Pool } = pg;
 import GatewayConfig from '../config/GatewayConfig'
 import { pipeline } from 'stream/promises';
 import http from 'http'

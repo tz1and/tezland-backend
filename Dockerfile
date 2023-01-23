@@ -28,4 +28,5 @@ RUN yarn global add pm2
 EXPOSE 9051
 EXPOSE 9052
 ENV NODE_ENV=production
+ENV NODE_OPTIONS='--no-warnings --experimental-modules --es-module-specifier-resolution=node'
 CMD ["pm2-runtime", "server.js"]

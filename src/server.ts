@@ -1,12 +1,10 @@
 import cluster from 'cluster';
 import process from 'process';
 import { promisify } from 'util';
-import ServerConfig from "./config/ServerConfig"
-import GatewayConfig from "./config/GatewayConfig"
 import assert from 'assert';
-import { config as dotenvFlowConfig } from 'dotenv-flow'
-import { isDev } from './utils/Utils';
-dotenvFlowConfig({ silent: !isDev() });
+import { loadEnv } from './utils/Utils';
+
+loadEnv(process.env.NODE_ENV!, './');
 
 assert(cluster.isPrimary);
 
@@ -44,13 +42,16 @@ function startGatewayWorker(): void {
 
 console.log(`Primary ${process.pid} is running`);
 
+const CLUSTER_WORKERS = (process.env.CLUSTER_WORKERS !== undefined) ? parseInt(process.env.CLUSTER_WORKERS) : 4;
+const GATEWAY_CLUSTER_WORKERS = (process.env.GATEWAY_CLUSTER_WORKERS !== undefined) ? parseInt(process.env.GATEWAY_CLUSTER_WORKERS) : 8;
+
 // Fork express workers.
-for (let i = 0; i < ServerConfig.CLUSTER_WORKERS; i++) {
+for (let i = 0; i < CLUSTER_WORKERS; i++) {
     startExpressWorker();
 }
 
 // Fork gateway workers.
-for (let i = 0; i < GatewayConfig.GATEWAY_CLUSTER_WORKERS; i++) {
+for (let i = 0; i < GATEWAY_CLUSTER_WORKERS; i++) {
     startGatewayWorker();
 }
 

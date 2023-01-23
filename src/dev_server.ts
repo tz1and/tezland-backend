@@ -1,7 +1,9 @@
-import { config as dotenvFlowConfig } from 'dotenv-flow';
-import { isDev } from './utils/Utils';
-dotenvFlowConfig({ silent: !isDev() });
+import { loadEnv } from './utils/Utils';
 
-import './express_worker';
-import './websocket_worker';
-import './gateway_worker';
+loadEnv(process.env.NODE_ENV!, './');
+
+(() => {
+    import('./express_worker');
+    import('./websocket_worker');
+    import('./gateway_worker');
+})();

@@ -10,12 +10,11 @@ class WebsocketConfig {
         if(process.env.CORS_ALLOW_ORIGIN)
             this.CORS_ALLOW_ORIGIN = process.env.CORS_ALLOW_ORIGIN;
         else this.CORS_ALLOW_ORIGIN = "";
+
+        console.log("WEBSOCKET_SERVER_PORT: " + this.WEBSOCKET_SERVER_PORT)
+        console.log("CORS_ALLOW_ORIGIN: " + this.CORS_ALLOW_ORIGIN + "\n")
     }
 }
 
 const config = new WebsocketConfig();
-
-console.log("WEBSOCKET_SERVER_PORT: " + config.WEBSOCKET_SERVER_PORT)
-console.log("CORS_ALLOW_ORIGIN: " + config.CORS_ALLOW_ORIGIN + "\n")
-
 export default config

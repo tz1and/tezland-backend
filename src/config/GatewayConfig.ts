@@ -7,7 +7,6 @@ class GatewayConfig {
     public PG_HOST: string;
     public PG_PORT: number;
     public PG_DATABASE: string;
-    public GATEWAY_CLUSTER_WORKERS: number;
 
     constructor() {
         if(process.env.GATEWAY_SERVER_PORT !== undefined)
@@ -42,20 +41,15 @@ class GatewayConfig {
             this.PG_DATABASE = process.env.PG_DATABASE;
         else this.PG_DATABASE = "dipdup";
 
-        if(process.env.GATEWAY_CLUSTER_WORKERS !== undefined)
-            this.GATEWAY_CLUSTER_WORKERS = parseInt(process.env.GATEWAY_CLUSTER_WORKERS);
-        else this.GATEWAY_CLUSTER_WORKERS = 8;
+        console.log("GATEWAY_SERVER_PORT: " + this.GATEWAY_SERVER_PORT)
+        console.log("LOCAL_IPFS_URL: " + this.LOCAL_IPFS_URL)
+        console.log("CORS_ALLOW_ORIGIN: " + this.CORS_ALLOW_ORIGIN)
+        console.log("PG_USER: " + this.PG_USER)
+        console.log("PG_HOST: " + this.PG_HOST)
+        console.log("PG_PORT: " + this.PG_PORT)
+        console.log("PG_DATABASE: " + this.PG_DATABASE + "\n")
     }
 }
 
 const config = new GatewayConfig();
-
-console.log("GATEWAY_SERVER_PORT: " + config.GATEWAY_SERVER_PORT)
-console.log("LOCAL_IPFS_URL: " + config.LOCAL_IPFS_URL)
-console.log("CORS_ALLOW_ORIGIN: " + config.CORS_ALLOW_ORIGIN)
-console.log("PG_USER: " + config.PG_USER)
-console.log("PG_HOST: " + config.PG_HOST)
-console.log("PG_PORT: " + config.PG_PORT)
-console.log("PG_DATABASE: " + config.PG_DATABASE + "\n")
-
 export default config
